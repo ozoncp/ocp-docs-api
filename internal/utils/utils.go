@@ -3,7 +3,12 @@ package utils
 func SwapKeyValue(source map[int]string) map[string]int {
 	var result = map[string]int{}
 	for key, value := range source {
-		result[value] = key
+		if _, found := result[value]; found {
+			errMsg := "Error: Result map already contain the key " + value
+			panic(errMsg)
+		} else {
+			result[value] = key
+		}
 	}
 	return result
 }
@@ -27,7 +32,7 @@ func FilterSliceByValues(source []string, filter []string) []string {
 	return result
 }
 
-func SplitSliceIntoChunks(source []int, chunkSize int) [][]int {
+func SplitSlice(source []int, chunkSize int) [][]int {
 	numOfChunks := len(source)/chunkSize
 	if len(source)%chunkSize != 0 {
 		numOfChunks += 1
