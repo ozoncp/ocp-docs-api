@@ -1,6 +1,9 @@
 package utils
 
 func SwapKeyValue(source map[int]string) map[string]int {
+	if source == nil {
+		return nil
+	}
 	var result = map[string]int{}
 	for key, value := range source {
 		if _, found := result[value]; found {
@@ -32,16 +35,21 @@ func FilterSliceByValues(source []string, filter []string) []string {
 	return result
 }
 
-func SplitSlice(source []int, chunkSize int) [][]int {
-	numOfChunks := len(source)/chunkSize
-	if len(source)%chunkSize != 0 {
-		numOfChunks += 1
+func SplitSlice(source []int, chunkSize uint) [][] int {
+	if source == nil || chunkSize == 0 {
+		return nil
+	}
+	lenSrc := uint(len(source))
+	numOfChunks := lenSrc/chunkSize
+	if lenSrc%chunkSize != 0 {
+		numOfChunks++
 	}
 	result := make([][]int, numOfChunks)
-
-	for i := 0; i < numOfChunks - 1; i++ {
-		result[i] = source[i * chunkSize: (i+1) * chunkSize]
+	for i := uint(0); i < numOfChunks - 1; i++ {
+		start := i * chunkSize
+		end := (i+1) * chunkSize
+		result[i] = source[start:end]
 	}
-	result[numOfChunks - 1] = source[(numOfChunks - 1) * chunkSize: len(source)]
+	result[numOfChunks - 1] = source[(numOfChunks - 1) * chunkSize:]
 	return result
 }

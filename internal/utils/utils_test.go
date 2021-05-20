@@ -38,17 +38,27 @@ func TestFilterSliceByValues(t *testing.T) {
 	ref := []string {"d", "e", "g"}
 	result := FilterSliceByValues(inSlice, filter)
 	if !reflect.DeepEqual(ref, result) {
-		t.Error("Fail", ref)
+		t.Error("Fail", result)
 		return
 	}
 }
 
-func TestSplitSlice(t *testing.T) {
+func TestSplitSliceWithTail(t *testing.T) {
 	sliceInt := []int {1,2,3,4,5}
 	result := SplitSlice(sliceInt, 3)
 	ref := [][]int{{1,2,3}, {4,5}}
 	if !reflect.DeepEqual(ref, result) {
-		t.Error("Fail", ref)
+		t.Error("Fail: ", result)
+		return
+	}
+}
+
+func TestSplitSliceWithoutTail(t *testing.T) {
+	sliceInt := []int {1,2,3,4,5,6}
+	result := SplitSlice(sliceInt, 2)
+	ref := [][]int{{1,2}, {3,4}, {5,6}}
+	if !reflect.DeepEqual(ref, result) {
+		t.Error("Fail: ", result)
 		return
 	}
 }
@@ -59,7 +69,7 @@ func TestThatSplitSliceCOnnectedWithOriginalSlice(t *testing.T) {
 	result[0][0] = 0
 	ref := []int {0,2,3,4,5}
 	if !reflect.DeepEqual(ref, sliceInt) {
-		t.Error("Fail", ref)
+		t.Error("Fail: ", result)
 		return
 	}
 }
