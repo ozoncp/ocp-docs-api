@@ -4,6 +4,6 @@ import (
 	"fmt"
 )
 
-func main () {
+func main() {
 	fmt.Println("Novak Alexander is working on docs API")
 }

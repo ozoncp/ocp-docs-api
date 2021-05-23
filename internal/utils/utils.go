@@ -35,21 +35,21 @@ func FilterSliceByValues(source []string, filter []string) []string {
 	return result
 }
 
-func SplitSlice(source []int, chunkSize uint) [][] int {
+func SplitSlice(source []int, chunkSize uint) [][]int {
 	if source == nil || chunkSize == 0 {
 		return nil
 	}
 	lenSrc := uint(len(source))
-	numOfChunks := lenSrc/chunkSize
+	numOfChunks := lenSrc / chunkSize
 	if lenSrc%chunkSize != 0 {
 		numOfChunks++
 	}
 	result := make([][]int, numOfChunks)
-	for i := uint(0); i < numOfChunks - 1; i++ {
+	for i := uint(0); i < numOfChunks-1; i++ {
 		start := i * chunkSize
-		end := (i+1) * chunkSize
+		end := (i + 1) * chunkSize
 		result[i] = source[start:end]
 	}
-	result[numOfChunks - 1] = source[(numOfChunks - 1) * chunkSize:]
+	result[numOfChunks-1] = source[(numOfChunks-1)*chunkSize:]
 	return result
 }
