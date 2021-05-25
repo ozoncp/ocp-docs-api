@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
-func main () {
-	for i :=0 ; i < 5; i++ {
-		func () {
+func main() {
+	for i := 0; i < 5; i++ {
+		func() {
 			f, err := os.Open("test.txt")
 			defer f.Close()
 			if err != nil {
@@ -20,6 +20,6 @@ func main () {
 				}
 				fmt.Printf("File contain: %s\n", string(data))
 			}
-		} ()
+		}()
 	}
 }

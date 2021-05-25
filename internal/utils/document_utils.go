@@ -5,9 +5,9 @@ import (
 	"github.com/ocp-docs-api/internal/models/document"
 )
 
-func SplitDocumentSlice(source []document.Document, chunkSize uint) [][]document.Document {
+func SplitDocumentSlice(source []document.Document, chunkSize uint) ([][]document.Document, error) {
 	if source == nil || chunkSize == 0 {
-		return nil
+		return nil, errors.New("inpit slice is nil or chunkSize is invalid")
 	}
 	lenSrc := uint(len(source))
 	numOfChunks := lenSrc / chunkSize
@@ -21,17 +21,17 @@ func SplitDocumentSlice(source []document.Document, chunkSize uint) [][]document
 		result[i] = source[start:end]
 	}
 	result[numOfChunks-1] = source[(numOfChunks-1)*chunkSize:]
-	return result
+	return result, nil
 }
 
 func ConvertDocumentSliceToMap(source []document.Document) (map[uint64]document.Document, error) {
 	if source == nil {
-		return nil, errors.New("Inpit slice is nil")
+		return nil, errors.New("inpit slice is nil")
 	}
 	documentMap := make(map[uint64]document.Document, len(source))
 	for _, val := range source {
 		if _, found := documentMap[val.Id]; found {
-			return nil, errors.New("Key already exist in a map")
+			return nil, errors.New("key already exist in a map")
 		}
 		documentMap[val.Id] = val
 	}
