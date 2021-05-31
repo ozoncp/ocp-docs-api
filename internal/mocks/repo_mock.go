@@ -47,3 +47,47 @@ func (mr *MockRepoMockRecorder) AddDocs(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDocs", reflect.TypeOf((*MockRepo)(nil).AddDocs), arg0)
 }
+
+// DescribeDoc mocks base method.
+func (m *MockRepo) DescribeDoc(arg0 uint64) (*document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DescribeDoc", arg0)
+	ret0, _ := ret[0].(*document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DescribeDoc indicates an expected call of DescribeDoc.
+func (mr *MockRepoMockRecorder) DescribeDoc(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeDoc", reflect.TypeOf((*MockRepo)(nil).DescribeDoc), arg0)
+}
+
+// ListDocs mocks base method.
+func (m *MockRepo) ListDocs(arg0, arg1 uint64) ([]document.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListDocs", arg0, arg1)
+	ret0, _ := ret[0].([]document.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListDocs indicates an expected call of ListDocs.
+func (mr *MockRepoMockRecorder) ListDocs(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDocs", reflect.TypeOf((*MockRepo)(nil).ListDocs), arg0, arg1)
+}
+
+// RemoveDoc mocks base method.
+func (m *MockRepo) RemoveDoc(arg0 uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveDoc", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveDoc indicates an expected call of RemoveDoc.
+func (mr *MockRepoMockRecorder) RemoveDoc(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveDoc", reflect.TypeOf((*MockRepo)(nil).RemoveDoc), arg0)
+}

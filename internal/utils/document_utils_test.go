@@ -43,6 +43,13 @@ func TestSplitDocSliceError(t *testing.T) {
 	assert.Empty(t, result)
 }
 
+func TestSplitDocSliceWithEmptyStruct(t *testing.T) {
+	sliceDoc := []document.Document{}
+	result, err := SplitDocumentSlice(sliceDoc, 3)
+	assert.Empty(t, err)
+	assert.Equal(t, result, [][]document.Document{})
+}
+
 func TestConvertDocumentSliceToMap(t *testing.T) {
 	sliceDoc := generateSimpleDocSlice()
 	result, err := ConvertDocumentSliceToMap(sliceDoc)

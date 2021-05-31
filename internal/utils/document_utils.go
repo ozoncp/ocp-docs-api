@@ -5,17 +5,22 @@ import (
 	"github.com/ocp-docs-api/internal/models/document"
 )
 
-func SplitDocumentSlice(source []document.Document, chunkSize uint) ([][]document.Document, error) {
+func SplitDocumentSlice(source []document.Document, chunkSize int) ([][]document.Document, error) {
 	if source == nil || chunkSize == 0 {
 		return nil, errors.New("inpit slice is nil or chunkSize is invalid")
 	}
-	lenSrc := uint(len(source))
+	lenSrc := len(source)
 	numOfChunks := lenSrc / chunkSize
 	if lenSrc%chunkSize != 0 {
 		numOfChunks++
 	}
+
+	if numOfChunks == 0 {
+		return [][]document.Document{}, nil
+	}
+
 	result := make([][]document.Document, numOfChunks)
-	for i := uint(0); i < numOfChunks-1; i++ {
+	for i := 0; i < numOfChunks-1; i++ {
 		start := i * chunkSize
 		end := (i + 1) * chunkSize
 		result[i] = source[start:end]
