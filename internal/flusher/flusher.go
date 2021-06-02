@@ -1,7 +1,6 @@
 package flusher
 
 import (
-	"fmt"
 	"github.com/ocp-docs-api/internal/models/document"
 	"github.com/ocp-docs-api/internal/repo"
 	"github.com/ocp-docs-api/internal/utils"
@@ -25,17 +24,16 @@ func New(docsRepo repo.Repo, chunkSize int) Flusher {
 
 func (f *flusher) Flush(docs []document.Document) []document.Document {
 	chunks, err := utils.SplitDocumentSlice(docs, f.chunkSize)
-	if len(docs) == 0 {
-		return nil
-	}
+
 	if err != nil {
-		fmt.Println("Error not nil")
 		return docs
 	}
+
 	for i := 0; i < len(chunks); i++ {
 		if err := f.repo.AddDocs(chunks[i]); err != nil {
 			return docs[i * int(f.chunkSize):]
 		}
 	}
+
 	return nil
 }

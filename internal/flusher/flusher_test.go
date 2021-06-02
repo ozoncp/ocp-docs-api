@@ -40,25 +40,12 @@ var _ = Describe("Flusher", func() {
 	Context("repo save all tasks", func() {
 		BeforeEach(func() {
 			chunkSize = 3
-			//docs = []document.Document{}
 			docs = []document.Document{
 				{Id: 1},
 				{Id: 2},
 				{Id: 3},
 			}
-			mockRepo.EXPECT().AddDocs(gomock.Any()).Return(nil).MinTimes(1)
-		})
-
-		It("", func() {
-			Expect(result).Should(BeNil())
-		})
-	})
-
-	Context("repo works with empty doc slice", func() {
-		BeforeEach(func() {
-			chunkSize = 3
-			docs = []document.Document{}
-			mockRepo.EXPECT().AddDocs(gomock.Any()).Return(nil).Times(0)
+			mockRepo.EXPECT().AddDocs([]document.Document{{Id: 1},{Id: 2}, {Id: 3}}).Return(nil)
 		})
 
 		It("", func() {
@@ -67,9 +54,6 @@ var _ = Describe("Flusher", func() {
 	})
 
 	Context("repo save part tasks", func() {
-		var (
-			halfSize int
-		)
 		BeforeEach(func() {
 			docs = []document.Document{
 				{Id: 1},
@@ -77,12 +61,11 @@ var _ = Describe("Flusher", func() {
 				{Id: 3},
 				{Id: 4},
 			}
-			halfSize = int(len(docs) / 2)
-			chunkSize = halfSize
 
+			chunkSize = 2
 			gomock.InOrder(
-				mockRepo.EXPECT().AddDocs(gomock.Len(chunkSize)).Return(nil).Times(1),
-				mockRepo.EXPECT().AddDocs(gomock.Len(len(docs)-chunkSize)).Return(errors.New("testError")),
+				mockRepo.EXPECT().AddDocs([]document.Document{{Id: 1},{Id: 2}}).Return(nil),
+				mockRepo.EXPECT().AddDocs([]document.Document{{Id: 3},{Id: 4}}).Return(errors.New("testError")),
 			)
 		})
 		expectedRes := []document.Document{
@@ -91,6 +74,28 @@ var _ = Describe("Flusher", func() {
 		}
 		It("", func() {
 			Expect(result).Should(BeEquivalentTo(expectedRes))
+		})
+	})
+
+	Context("repo works with empty doc slice", func() {
+		BeforeEach(func() {
+			chunkSize = 3
+			docs = []document.Document{}
+		})
+
+		It("", func() {
+			Expect(result).Should(BeNil())
+		})
+	})
+
+	Context("repo works with nil doc slice", func() {
+		BeforeEach(func() {
+			chunkSize = 3
+			docs = nil
+		})
+
+		It("", func() {
+			Expect(result).Should(BeNil())
 		})
 	})
 })
