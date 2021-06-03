@@ -6,18 +6,18 @@ import (
 )
 
 var (
-	inputSliceIsNil = errors.New("inpit slice is nil")
-	chinkSizeIsInvalid = errors.New("chunkSize is invalid")
-	keyAlreadyExistInAMap = errors.New("key already exist in a map")
+	errorInputSliceIsNil = errors.New("inpit slice is nil")
+	errorChunkSizeIsInvalid = errors.New("chunkSize is invalid")
+	errorKeyAlreadyExistInMap  = errors.New("key already exist in a map")
 )
 
 func SplitDocumentSlice(source []document.Document, chunkSize int) ([][]document.Document, error) {
 	if source == nil {
-		return nil, inputSliceIsNil
+		return nil, errorInputSliceIsNil
 	}
 
 	if chunkSize <= 0 {
-		return nil, chinkSizeIsInvalid
+		return nil, errorChunkSizeIsInvalid
 	}
 
 	lenSrc := len(source)
@@ -42,12 +42,12 @@ func SplitDocumentSlice(source []document.Document, chunkSize int) ([][]document
 
 func ConvertDocumentSliceToMap(source []document.Document) (map[uint64]document.Document, error) {
 	if source == nil {
-		return nil, inputSliceIsNil
+		return nil, errorInputSliceIsNil
 	}
 	documentMap := make(map[uint64]document.Document, len(source))
 	for _, val := range source {
 		if _, found := documentMap[val.Id]; found {
-			return nil, keyAlreadyExistInAMap
+			return nil, errorKeyAlreadyExistInMap
 		}
 		documentMap[val.Id] = val
 	}
