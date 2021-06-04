@@ -52,5 +52,6 @@ func (a * alarmer) Init() {
 }
 
 func (a * alarmer) Close() {
-	<-a.done
+	fmt.Println("CLOSE!!!")
+	a.done <- struct{}{}
 }
