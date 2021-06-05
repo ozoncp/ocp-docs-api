@@ -1,7 +1,6 @@
 package saver
 
 import (
-	"fmt"
 	"github.com/ocp-docs-api/internal/alarmer"
 	"github.com/ocp-docs-api/internal/flusher"
 	"github.com/ocp-docs-api/internal/models/document"
@@ -32,7 +31,7 @@ type saver struct {
 
 func New(capacity int, f flusher.Flusher, a alarmer.Alarmer, strategy SaveStrategy) Saver {
 	done := make(chan struct{})
-	data := make([]document.Document, capacity)
+	data := make([]document.Document, 0, capacity)
 	docCh := make(chan document.Document)
 	return &saver{
 		capacity: capacity,
@@ -54,41 +53,39 @@ func (s *saver) Close() {
 	close(s.done)
 }
 
-func (s *saver) overFlowLogic() {
-	switch s.strategy {
-	case DropAll:
-		s.data = make([]document.Document, s.capacity)
-	case DropOne:
-		copy(s.data[0:], s.data[1:])
-		s.data = s.data[:len(s.data)-1]
-	}
-}
-
 func (s *saver) flushing() {
 	for {
 		select {
 		case _, ok := <-s.a.Alarm():
 			if ok {
-				s.data = s.f.Flush(s.data)
-				fmt.Println("Flush")
-			} else {
-				fmt.Println("Alarm channel is not available")
+				flushRes := s.f.Flush(s.data)
+				if flushRes != nil {
+					s.data = flushRes
+				} else {
+					s.data = s.data[:0]
+				}
 			}
 		case <-s.done:
-			fmt.Println("Close Saver")
+			s.data = s.f.Flush(s.data)
 			s.a.Close()
 			return
 		case task := <-s.docCh:
 			if len(s.data) == cap(s.data) {
-				s.overFlowLogic()
+				switch s.strategy {
+				case DropAll:
+					s.data = s.data[:0]
+					s.data = append(s.data, task)
+				case DropOne:
+					s.data = append(s.data[1:], task)
+				}
+			} else {
+				s.data = append(s.data, task)
 			}
-			s.data = append(s.data, task)
-			fmt.Println("push task")
 		}
 	}
 }
 
 func (s *saver) Init() {
-
+	go s.flushing()
 }
 

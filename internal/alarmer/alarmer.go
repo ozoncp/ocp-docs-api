@@ -1,7 +1,6 @@
 package alarmer
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -35,23 +34,19 @@ func (a * alarmer) Init() {
 	go func () {
 		timer := time.NewTicker(a.timeout)
 		defer timer.Stop()
+		defer close(a.alarms)
+		defer close(a.done)
 		for {
 			select {
 				case <- timer.C:
-					fmt.Println("Tick")
 					a.alarms <- struct{}{}
 				case <-a.done:
-					close(a.alarms)
-					close(a.done)
-					fmt.Println("close alarmer")
 					return
-
 			}
 		}
 	} ()
 }
 
 func (a * alarmer) Close() {
-	fmt.Println("CLOSE!!!")
 	a.done <- struct{}{}
 }
