@@ -5,7 +5,7 @@ import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 
 package ocp.docs.api;
 
-option go_package = "gihtub.com/ozoncp/ocp-docs-api/pkg/ocp-docs-api;oct_docs_api";
+option go_package = "ocp-docs-api/pkg/ocp-docs-api;oct_docs_api";
 
 // Описание документа
 
@@ -39,7 +39,8 @@ service OcpDocsApi {
 
 
 message ListDocsV1Request {
- // что тут писать?
+    uint64 limit = 1;
+    uint64 offset = 2;
 }
 
 message ListDocsV1Response {
@@ -72,9 +73,7 @@ message RemoveDocV1Response {
     bool found = 1;
 }
 
-
-
-message ListDocsV1Response {
+message Doc {
     uint64 id = 1;
     string name = 2;
     string link = 3;
