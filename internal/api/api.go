@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	desc "github.com/ocp-docs-api/pkg/ocp-docs-api/ocp-docs-api/pkg/ocp-docs-api"
+	desc "github.com/ocp-docs-api/pkg/ocp-docs-api"
 	"github.com/rs/zerolog/log"
 )
 

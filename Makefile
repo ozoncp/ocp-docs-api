@@ -1,32 +1,70 @@
-.PHONY: setup
+.PHONY: build
 build: vendor-proto .generate .build
+
 PHONY: .generate
 .generate:
-	 IF NOT EXIST "pkg\ocp-runner-api" \
-	 mkdir "pkg\ocp-docs-api" &&\
-	 protoc -I vendor.protogen \
-		   --go_out=pkg/ocp-docs-api --go_opt=paths=import \
-		   --go-grpc_out=pkg/ocp-docs-api --go-grpc_opt=paths=import \
-		   --grpc-gateway_out=pkg/ocp-docs-api \
-		   --grpc-gateway_opt=logtostderr=true \
-		   --grpc-gateway_opt=paths=import \
-		   --validate_out lang=go:pkg/ocp-docs-api \
-		   --swagger_out=allow_merge=true,merge_file_name=api:. \
-		   api/ocp-docs-api/ocp-docs-api.proto &&\
-	 move "pkg\ocp-docs-api\github.com\ozoncp\ocp-docs-api\pkg\ocp-docs-api\*" "pkg\ocp-docs-api" &&\
-	 rmdir /s "pkg\ocp-docs-api\github.com" &&\
-	 IF NOT EXIST "cmd/ocp-docs-api" \
-		mkdir "cmd/ocp-docs-api"
+		mkdir -p swagger
+		mkdir -p pkg/ocp-docs-api
+		protoc -I vendor.protogen \
+				--go_out=pkg/ocp-docs-api --go_opt=paths=import \
+				--go-grpc_out=pkg/ocp-docs-api --go-grpc_opt=paths=import \
+				--grpc-gateway_out=pkg/ocp-docs-api \
+				--grpc-gateway_opt=logtostderr=true \
+				--grpc-gateway_opt=paths=import \
+				--validate_out lang=go:pkg/ocp-docs-api \
+				--swagger_out=allow_merge=true,merge_file_name=api:swagger \
+				api/ocp-docs-api/ocp-docs-api.proto
+		mv pkg/ocp-docs-api/gihtub.com/ozoncp/ocp-docs-api/pkg/ocp-docs-api/* pkg/ocp-docs-api/
+		rm -rf pkg/ocp-docs-api/gihtub.com
+		mkdir -p cmd/ocp-docs-api
+
 PHONY: .build
 .build:
-	go build -o bin/ocp-docs-api.exe cmd/ocp-docs-api/main.go
+		CGO_ENABLED=0 GOOS=linux go build -o bin/ocp-docs-api cmd/ocp-docs-api/main.go
+
 PHONY: install
 install: build .install
+
 PHONY: .install
 install:
-	go install cmd/grpc-server/main.go
+		go install cmd/grpc-server/main.go
+
 PHONY: vendor-proto
 vendor-proto: .vendor-proto
+
 PHONY: .vendor-proto
 .vendor-proto:
-	mkdir "vendor.protogen/api/"
+		mkdir -p vendor.protogen
+		mkdir -p vendor.protogen/api/ocp-docs-api
+		cp api/ocp-docs-api/ocp-docs-api.proto vendor.protogen/api/ocp-docs-api
+		@if [ ! -d vendor.protogen/google ]; then \
+			git clone https://github.com/googleapis/googleapis vendor.protogen/googleapis &&\
+			mkdir -p  vendor.protogen/google/ &&\
+			mv vendor.protogen/googleapis/google/api vendor.protogen/google &&\
+			rm -rf vendor.protogen/googleapis ;\
+		fi
+		@if [ ! -d vendor.protogen/github.com/envoyproxy ]; then \
+			mkdir -p vendor.protogen/github.com/envoyproxy &&\
+			git clone https://github.com/envoyproxy/protoc-gen-validate vendor.protogen/github.com/envoyproxy/protoc-gen-validate ;\
+		fi
+
+
+.PHONY: deps
+deps: install-go-deps
+
+.PHONY: install-go-deps
+install-go-deps: .install-go-deps
+
+.PHONY: .install-go-deps
+.install-go-deps:
+		ls go.mod || go mod init
+		go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+		go get -u github.com/golang/protobuf/proto
+		go get -u github.com/golang/protobuf/protoc-gen-go
+		go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+		go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
+		tmpdir=$$(mktemp -d); cd $$tmpdir && export GO111MODULE=off \
+		  && go get -d github.com/envoyproxy/protoc-gen-validate \
+			&& cd $$GOPATH/src/github.com/envoyproxy/protoc-gen-validate && git checkout v0.1.0 \
+			&& go build -o $$GOPATH/bin/protoc-gen-validate $$GOPATH/src/github.com/envoyproxy/protoc-gen-validate/main.go \
+			&& cd -
