@@ -49,28 +49,25 @@ func (s *saver) Save(doc document.Document) {
 }
 
 func (s *saver) Close() {
-	s.done <- struct{}{}
 	close(s.done)
 }
 
 func (s *saver) flushing() {
 	for {
 		select {
-		case _, ok := <-s.a.Alarm():
-			if ok {
-				flushRes := s.f.Flush(s.data)
-				if flushRes != nil {
-					s.data = flushRes
-				} else {
-					s.data = s.data[:0]
-				}
+		case <-s.a.Alarm():
+			flushRes := s.f.Flush(s.data)
+			if flushRes != nil {
+				s.data = flushRes
+			} else {
+				s.data = s.data[:0]
 			}
 		case <-s.done:
 			s.data = s.f.Flush(s.data)
 			s.a.Close()
 			return
 		case task := <-s.docCh:
-			if len(s.data) == cap(s.data) {
+			if len(s.data) == s.capacity {
 				switch s.strategy {
 				case DropAll:
 					s.data = s.data[:0]

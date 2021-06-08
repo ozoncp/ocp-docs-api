@@ -33,9 +33,12 @@ func (a * alarmer) Alarm() <-chan struct{} {
 func (a * alarmer) Init() {
 	go func () {
 		timer := time.NewTicker(a.timeout)
-		defer timer.Stop()
-		defer close(a.alarms)
-		defer close(a.done)
+		defer func () {
+			timer.Stop()
+			close(a.alarms)
+			close(a.done)
+		} ()
+
 		for {
 			select {
 				case <- timer.C:
