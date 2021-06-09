@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/envoyproxy/protoc-gen-validate v0.6.1 // indirect
+	github.com/fullstorydev/grpcui v1.1.0 // indirect
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
 	github.com/golang/mock v1.5.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

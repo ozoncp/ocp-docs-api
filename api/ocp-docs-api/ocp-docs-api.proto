@@ -1,11 +1,11 @@
 syntax = "proto3";
 
 import "google/api/annotations.proto";
-import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
+// import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 
 package ocp.docs.api;
 
-option go_package = "gihtub.com/ozoncp/ocp-docs-api/pkg/ocp-docs-api;oct_docs_api";
+option go_package = "github.com/ozoncp/ocp-docs-api/pkg/ocp-docs-api;ocp_docs_api";
 
 // Описание документа
 

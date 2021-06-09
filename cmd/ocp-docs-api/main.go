@@ -3,30 +3,41 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net"
+	"os"
+
 	"github.com/ocp-docs-api/internal/api"
 	desc "github.com/ocp-docs-api/pkg/ocp-docs-api"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
-	"log"
-	"net"
+	"google.golang.org/grpc/reflection"
 )
 
-func main () {
-	fmt.Println("Start gRPC server")
+var grpcPort int
 
-	const grpcPort = ":7002"
+func init() {
+	flag.IntVar(&grpcPort, "port", 1235, "GRPC server port")
+}
 
-	var grpcEndpoint = flag.String("grpc-server-endpoint", "0.0.0.0"+grpcPort, "gRPC server endpoint")
+func main() {
+	flag.Parse()
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	grpcEndpoint := fmt.Sprintf("localhost:%d", grpcPort)
 
-	listen, err := net.Listen("tcp", grpcPort)
+	lis, err := net.Listen("tcp", grpcEndpoint)
+
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatal().Err(err).Msgf("Cannot start feedback grpc server at %v", grpcEndpoint)
 	}
 
-	s := grpc.NewServer()
-	desc.RegisterOcpDocsApiServer(s, api.NewDocsApi())
+	log.Info().Msgf("Starting server at %v...", grpcEndpoint)
 
-	fmt.Printf("Server listening on %s\n", *grpcEndpoint)
-	if err := s.Serve(listen); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	grpcServer := grpc.NewServer()
+	reflection.Register(grpcServer)
+	desc.RegisterOcpDocsApiServer(grpcServer, api.NewDocsApi())
+
+	if err = grpcServer.Serve(lis); err != nil {
+		log.Fatal().Err(err).Msg("Cannot accept connections")
 	}
 }

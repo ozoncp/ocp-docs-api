@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-
 	desc "github.com/ocp-docs-api/pkg/ocp-docs-api"
 	"github.com/rs/zerolog/log"
 )
@@ -20,7 +19,7 @@ func (a *api) ListDocsV1(
 	req *desc.ListDocsV1Request,
 ) (*desc.ListDocsV1Response, error) {
 	log.Print("ListDocsV1", req)
-	return nil, nil
+	return &desc.ListDocsV1Response{}, nil
 }
 
 func (a *api) DescribeDocV1(
@@ -28,7 +27,7 @@ func (a *api) DescribeDocV1(
 	req *desc.DescribeDocV1Request,
 ) (*desc.DescribeDocV1Response, error) {
 	log.Print("DescribeDocV1", req)
-	return nil, nil
+	return &desc.DescribeDocV1Response{}, nil
 }
 
 func (a *api) CreateDocV1(
@@ -36,7 +35,7 @@ func (a *api) CreateDocV1(
 	req *desc.CreateDocV1Request,
 ) (*desc.CreateDocV1Response, error) {
 	log.Print("CreateDocV1", req)
-	return nil, nil
+	return &desc.CreateDocV1Response{}, nil
 }
 
 func (a *api) RemoveDocV1(
@@ -44,5 +43,5 @@ func (a *api) RemoveDocV1(
 	req *desc.RemoveDocV1Request,
 ) (*desc.RemoveDocV1Response, error) {
 	log.Print("RemoveDocV1", req)
-	return nil, nil
+	return &desc.RemoveDocV1Response{}, nil
 }
