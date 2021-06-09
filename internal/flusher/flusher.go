@@ -24,7 +24,6 @@ func New(docsRepo repo.Repo, chunkSize int) Flusher {
 
 func (f *flusher) Flush(docs []document.Document) []document.Document {
 	chunks, err := utils.SplitDocumentSlice(docs, f.chunkSize)
-
 	if err != nil {
 		return docs
 	}
