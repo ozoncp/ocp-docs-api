@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+// import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
+
+package ocp.docs.api;
+
+option go_package = "github.com/ozoncp/ocp-docs-api/pkg/ocp-docs-api;ocp_docs_api";
+
+// Описание документа
+
+service OcpDocsApi {
+
+    rpc ListDocsV1(ListDocsV1Request) returns (ListDocsV1Response) {
+        option (google.api.http) = {
+            get: "/v1/docs"
+        };
+    }
+
+    rpc DescribeDocV1(DescribeDocV1Request) returns (DescribeDocV1Response) {
+        option (google.api.http) = {
+            get: "/v1/docs/{id}"
+        };
+    }
+
+    rpc CreateDocV1(CreateDocV1Request) returns (CreateDocV1Response) {
+        option (google.api.http) = {
+            post: "/v1/docs"
+        };
+    }
+
+    rpc RemoveDocV1(RemoveDocV1Request) returns (RemoveDocV1Response) {
+        option (google.api.http) = {
+            delete: "/v1/docs/{id}"
+        };
+    }
+}
+
+
+
+message ListDocsV1Request {
+    uint64 limit = 1;
+    uint64 offset = 2;
+}
+
+message ListDocsV1Response {
+    repeated Doc docs = 1;
+}
+
+message DescribeDocV1Request {
+		uint64 id = 1;
+}
+
+message DescribeDocV1Response {
+    Doc doc = 1;
+}
+
+message CreateDocV1Request {
+    string name = 1;
+    string link = 2;
+    string sourceLink = 3;
+}
+
+message CreateDocV1Response {
+    uint64 id = 1;
+}
+
+message RemoveDocV1Request {
+    uint64 id = 1;
+}
+
+message RemoveDocV1Response {
+    bool found = 1;
+}
+
+message Doc {
+    uint64 id = 1;
+    string name = 2;
+    string link = 3;
+    string sourceLink = 4;
+}
