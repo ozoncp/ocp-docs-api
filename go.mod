@@ -3,12 +3,14 @@ module github.com/ocp-docs-api
 go 1.16
 
 require (
+	github.com/Masterminds/squirrel v1.5.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.6.1 // indirect
 	github.com/fullstorydev/grpcui v1.1.0 // indirect
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
 	github.com/golang/mock v1.5.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
+	github.com/jmoiron/sqlx v1.3.4 // indirect
 	github.com/onsi/ginkgo v1.16.3 // indirect
 	github.com/onsi/gomega v1.13.0 // indirect
 	github.com/rs/zerolog v1.22.0 // indirect
