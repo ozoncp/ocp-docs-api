@@ -36,7 +36,7 @@ func (a *api) ListDocsV1(
 	if err := req.Validate(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	log.Info().Msgf("Got ListDocsRequest: {limit: %d, offset: %d}", req.Limit, req.Offset)
+	log.Info().Msgf("Requesting to list docs: {count: %d, started from: %d}", req.Limit, req.Offset)
 	docs, err := a.repo.ListDocs(ctx, req.Limit, req.Offset)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to ListDocs")
@@ -98,7 +98,7 @@ func (a *api) CreateDocV1(
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to CreateDoc")
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	log.Info().Msgf("Create doc with id = %d successfully", docId)
 
@@ -118,7 +118,7 @@ func (a *api) RemoveDocV1(
 	err := a.repo.RemoveDoc(ctx, req.Id)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to remove doc, id = %d", req.Id)
-		return &desc.RemoveDocV1Response {Found: false}, status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	log.Info().Msgf("Doc %d was deleted", req.Id)
 	return &desc.RemoveDocV1Response{Found: true}, nil

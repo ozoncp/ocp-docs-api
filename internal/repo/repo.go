@@ -63,7 +63,7 @@ func (r *repo) RemoveDoc(ctx context.Context, docId uint64) error {
 	}
 
 	if rowsAffected <= 0 {
-		return errors.New("not found note")
+		return errors.New("doc not found")
 	}
 
 	return nil

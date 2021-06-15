@@ -1,13 +1,14 @@
 package flusher
 
 import (
+	"context"
 	"github.com/ocp-docs-api/internal/models/document"
 	"github.com/ocp-docs-api/internal/repo"
 	"github.com/ocp-docs-api/internal/utils"
 )
 
 type Flusher interface {
-	Flush(docs []document.Document) []document.Document
+	Flush(ctx context.Context, docs []document.Document) []document.Document
 }
 
 type flusher struct {
@@ -22,14 +23,14 @@ func New(docsRepo repo.Repo, chunkSize int) Flusher {
 	}
 }
 
-func (f *flusher) Flush(docs []document.Document) []document.Document {
+func (f *flusher) Flush(ctx context.Context, docs []document.Document) []document.Document {
 	chunks, err := utils.SplitDocumentSlice(docs, f.chunkSize)
 	if err != nil {
 		return docs
 	}
 
 	for i := 0; i < len(chunks); i++ {
-		if err := f.repo.AddDocs(chunks[i]); err != nil {
+		if err := f.repo.AddDocs(ctx, chunks[i]); err != nil {
 			return docs[i * int(f.chunkSize):]
 		}
 	}

@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,60 +35,75 @@ func (m *MockRepo) EXPECT() *MockRepoMockRecorder {
 	return m.recorder
 }
 
-// AddDocs mocks base method.
-func (m *MockRepo) AddDocs(arg0 []document.Document) error {
+// AddDoc mocks base method.
+func (m *MockRepo) AddDoc(arg0 context.Context, arg1 document.Document) (uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddDocs", arg0)
+	ret := m.ctrl.Call(m, "AddDoc", arg0, arg1)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddDoc indicates an expected call of AddDoc.
+func (mr *MockRepoMockRecorder) AddDoc(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDoc", reflect.TypeOf((*MockRepo)(nil).AddDoc), arg0, arg1)
+}
+
+// AddDocs mocks base method.
+func (m *MockRepo) AddDocs(arg0 context.Context, arg1 []document.Document) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddDocs", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddDocs indicates an expected call of AddDocs.
-func (mr *MockRepoMockRecorder) AddDocs(arg0 interface{}) *gomock.Call {
+func (mr *MockRepoMockRecorder) AddDocs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDocs", reflect.TypeOf((*MockRepo)(nil).AddDocs), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDocs", reflect.TypeOf((*MockRepo)(nil).AddDocs), arg0, arg1)
 }
 
 // DescribeDoc mocks base method.
-func (m *MockRepo) DescribeDoc(arg0 uint64) (*document.Document, error) {
+func (m *MockRepo) DescribeDoc(arg0 context.Context, arg1 uint64) (*document.Document, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DescribeDoc", arg0)
+	ret := m.ctrl.Call(m, "DescribeDoc", arg0, arg1)
 	ret0, _ := ret[0].(*document.Document)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // DescribeDoc indicates an expected call of DescribeDoc.
-func (mr *MockRepoMockRecorder) DescribeDoc(arg0 interface{}) *gomock.Call {
+func (mr *MockRepoMockRecorder) DescribeDoc(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeDoc", reflect.TypeOf((*MockRepo)(nil).DescribeDoc), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeDoc", reflect.TypeOf((*MockRepo)(nil).DescribeDoc), arg0, arg1)
 }
 
 // ListDocs mocks base method.
-func (m *MockRepo) ListDocs(arg0, arg1 uint64) ([]document.Document, error) {
+func (m *MockRepo) ListDocs(arg0 context.Context, arg1, arg2 uint64) ([]document.Document, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListDocs", arg0, arg1)
+	ret := m.ctrl.Call(m, "ListDocs", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]document.Document)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListDocs indicates an expected call of ListDocs.
-func (mr *MockRepoMockRecorder) ListDocs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRepoMockRecorder) ListDocs(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDocs", reflect.TypeOf((*MockRepo)(nil).ListDocs), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDocs", reflect.TypeOf((*MockRepo)(nil).ListDocs), arg0, arg1, arg2)
 }
 
 // RemoveDoc mocks base method.
-func (m *MockRepo) RemoveDoc(arg0 uint64) error {
+func (m *MockRepo) RemoveDoc(arg0 context.Context, arg1 uint64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveDoc", arg0)
+	ret := m.ctrl.Call(m, "RemoveDoc", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveDoc indicates an expected call of RemoveDoc.
-func (mr *MockRepoMockRecorder) RemoveDoc(arg0 interface{}) *gomock.Call {
+func (mr *MockRepoMockRecorder) RemoveDoc(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveDoc", reflect.TypeOf((*MockRepo)(nil).RemoveDoc), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveDoc", reflect.TypeOf((*MockRepo)(nil).RemoveDoc), arg0, arg1)
 }
