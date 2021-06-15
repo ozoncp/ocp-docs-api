@@ -61,7 +61,7 @@ var _ = Describe("Saver", func() {
 
 				gomock.InOrder(
 					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs)),
-					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs[:0])).Do(func(entities []document.Document) { wg.Done()}),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs[:0])).Do(func(ctx context.Context, entities []document.Document) { wg.Done()}),
 				)
 				saver.Init()
 
@@ -73,136 +73,136 @@ var _ = Describe("Saver", func() {
 			})
 		})
 
-		//Context("Save smth before closing ", func() {
-		//	It("", func() {
-		//		docs := []document.Document{
-		//			{Id: 1},
-		//			{Id: 2},
-		//			{Id: 3},
-		//			{Id: 4},
-		//		}
-		//		var wg sync.WaitGroup
-		//		wg.Add(1)
-		//		defer wg.Wait()
-		//		saver := saver.New(ctx, len(docs) + 1, mockFlusher, alarmer, saver.DropAll)
-		//
-		//		gomock.InOrder(
-		//			mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs[:2])),
-		//			mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs[2:])).Do(func(entities []document.Document) { wg.Done()}),
-		//		)
-		//		saver.Init()
-		//
-		//		for i := 0; i < 2; i++ {
-		//			saver.Save(docs[i])
-		//		}
-		//		alarmer.alarm()
-		//		for i := 2; i < len(docs); i++ {
-		//			saver.Save(docs[i])
-		//		}
-		//		saver.Close()
-		//	})
-		//})
+		Context("Save smth before closing ", func() {
+			It("", func() {
+				docs := []document.Document{
+					{Id: 1},
+					{Id: 2},
+					{Id: 3},
+					{Id: 4},
+				}
+				var wg sync.WaitGroup
+				wg.Add(1)
+				defer wg.Wait()
+				saver := saver.New(ctx, len(docs) + 1, mockFlusher, alarmer, saver.DropAll)
 
-		//Context("Save more than capacity", func() {
-		//	It("should drop everything", func() {
-		//		docs := []document.Document{
-		//			{Id: 1},
-		//			{Id: 2},
-		//			{Id: 3},
-		//			{Id: 4},
-		//		}
-		//
-		//		newDocs := []document.Document{
-		//			{Id: 5},
-		//			{Id: 6},
-		//		}
-		//
-		//		var wg sync.WaitGroup
-		//		wg.Add(1)
-		//		defer wg.Wait()
-		//
-		//		saver := saver.New(ctx, len(docs), mockFlusher, alarmer, saver.DropAll)
-		//
-		//		gomock.InOrder(
-		//			mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs)),
-		//			mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs[:0])).Do(func(entities []document.Document) { wg.Done() }),
-		//		)
-		//
-		//		saver.Init()
-		//
-		//		for i := 0; i < len(docs); i++ {
-		//			saver.Save(docs[i])
-		//		}
-		//
-		//		for i := 0; i < len(newDocs); i++ {
-		//			saver.Save(newDocs[i])
-		//		}
-		//
-		//		alarmer.alarm()
-		//		saver.Close()
-		//	})
-		//
-		//	It("should drop first", func() {
-		//		docs := []document.Document{
-		//			{Id: 1},
-		//			{Id: 2},
-		//			{Id: 3},
-		//		}
-		//
-		//		newDocs := []document.Document{
-		//			{Id: 2},
-		//			{Id: 3},
-		//			{Id: 4},
-		//		}
-		//
-		//		var wg sync.WaitGroup
-		//		wg.Add(1)
-		//		defer wg.Wait()
-		//
-		//		saver := saver.New(ctx, len(docs), mockFlusher, alarmer, saver.DropOne)
-		//
-		//		gomock.InOrder(
-		//			mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs)),
-		//			mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs[:0])).Do(func(entities []document.Document) { wg.Done() }),
-		//		)
-		//
-		//		saver.Init()
-		//
-		//		for i := 0; i < len(docs); i++ {
-		//			saver.Save(docs[i])
-		//		}
-		//		saver.Save(document.Document{Id: 4})
-		//		alarmer.alarm()
-		//		saver.Close()
-		//	})
-		//})
+				gomock.InOrder(
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs[:2])),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs[2:])).Do(func(ctx context.Context, entities []document.Document) { wg.Done()}),
+				)
+				saver.Init()
 
-		//Context("flush has failed ", func() {
-		//	It("", func() {
-		//		docs := []document.Document{
-		//			{Id: 1},
-		//			{Id: 2},
-		//			{Id: 3},
-		//			{Id: 4},
-		//		}
-		//		var wg sync.WaitGroup
-		//		wg.Add(1)
-		//		defer wg.Wait()
-		//		saver := saver.New(ctx, len(docs) + 1, mockFlusher, alarmer, saver.DropAll)
-		//
-		//		gomock.InOrder(
-		//			mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs)).Return([]document.Document{{Id: 3}, {Id: 4}}),
-		//			mockFlusher.EXPECT().Flush(ctx, gomock.Eq([]document.Document{{Id: 3}, {Id: 4}})).Do(func(entities []document.Document) { wg.Done()}),
-		//		)
-		//		saver.Init()
-		//
-		//		for i := 0; i < len(docs); i++ {
-		//			saver.Save(docs[i])
-		//		}
-		//		alarmer.alarm()
-		//		saver.Close()
-		//	})
-		//})
+				for i := 0; i < 2; i++ {
+					saver.Save(docs[i])
+				}
+				alarmer.alarm()
+				for i := 2; i < len(docs); i++ {
+					saver.Save(docs[i])
+				}
+				saver.Close()
+			})
+		})
+
+		Context("Save more than capacity", func() {
+			It("should drop everything", func() {
+				docs := []document.Document{
+					{Id: 1},
+					{Id: 2},
+					{Id: 3},
+					{Id: 4},
+				}
+
+				newDocs := []document.Document{
+					{Id: 5},
+					{Id: 6},
+				}
+
+				var wg sync.WaitGroup
+				wg.Add(1)
+				defer wg.Wait()
+
+				saver := saver.New(ctx, len(docs), mockFlusher, alarmer, saver.DropAll)
+
+				gomock.InOrder(
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs)),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs[:0])).Do(func(ctx context.Context, entities []document.Document) { wg.Done() }),
+				)
+
+				saver.Init()
+
+				for i := 0; i < len(docs); i++ {
+					saver.Save(docs[i])
+				}
+
+				for i := 0; i < len(newDocs); i++ {
+					saver.Save(newDocs[i])
+				}
+
+				alarmer.alarm()
+				saver.Close()
+			})
+
+			It("should drop first", func() {
+				docs := []document.Document{
+					{Id: 1},
+					{Id: 2},
+					{Id: 3},
+				}
+
+				newDocs := []document.Document{
+					{Id: 2},
+					{Id: 3},
+					{Id: 4},
+				}
+
+				var wg sync.WaitGroup
+				wg.Add(1)
+				defer wg.Wait()
+
+				saver := saver.New(ctx, len(docs), mockFlusher, alarmer, saver.DropOne)
+
+				gomock.InOrder(
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs)),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs[:0])).Do(func(ctx context.Context, entities []document.Document) { wg.Done() }),
+				)
+
+				saver.Init()
+
+				for i := 0; i < len(docs); i++ {
+					saver.Save(docs[i])
+				}
+				saver.Save(document.Document{Id: 4})
+				alarmer.alarm()
+				saver.Close()
+			})
+		})
+
+		Context("flush has failed ", func() {
+			It("", func() {
+				docs := []document.Document{
+					{Id: 1},
+					{Id: 2},
+					{Id: 3},
+					{Id: 4},
+				}
+				var wg sync.WaitGroup
+				wg.Add(1)
+				defer wg.Wait()
+				saver := saver.New(ctx, len(docs) + 1, mockFlusher, alarmer, saver.DropAll)
+
+				gomock.InOrder(
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs)).Return([]document.Document{{Id: 3}, {Id: 4}}),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq([]document.Document{{Id: 3}, {Id: 4}})).Do(func(ctx context.Context, entities []document.Document) { wg.Done()}),
+				)
+				saver.Init()
+
+				for i := 0; i < len(docs); i++ {
+					saver.Save(docs[i])
+				}
+				alarmer.alarm()
+				saver.Close()
+			})
+		})
 	})
 
 })
