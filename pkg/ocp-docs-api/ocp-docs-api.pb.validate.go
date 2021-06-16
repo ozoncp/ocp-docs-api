@@ -15,7 +15,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 // ensure the imports are used
@@ -30,7 +30,7 @@ var (
 	_ = time.Duration(0)
 	_ = (*url.URL)(nil)
 	_ = (*mail.Address)(nil)
-	_ = ptypes.DynamicAny{}
+	_ = anypb.Any{}
 )
 
 // Validate checks the field values on ListDocsV1Request with the rules defined
@@ -194,7 +194,12 @@ func (m *DescribeDocV1Request) Validate() error {
 		return nil
 	}
 
-	// no validation rules for Id
+	if m.GetId() <= 0 {
+		return DescribeDocV1RequestValidationError{
+			field:  "Id",
+			reason: "value must be greater than 0",
+		}
+	}
 
 	return nil
 }
@@ -482,7 +487,12 @@ func (m *RemoveDocV1Request) Validate() error {
 		return nil
 	}
 
-	// no validation rules for Id
+	if m.GetId() <= 0 {
+		return RemoveDocV1RequestValidationError{
+			field:  "Id",
+			reason: "value must be greater than 0",
+		}
+	}
 
 	return nil
 }

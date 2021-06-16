@@ -12,14 +12,14 @@ type Flusher interface {
 }
 
 type flusher struct {
-	repo repo.Repo
+	repo      repo.Repo
 	chunkSize int
 }
 
 func New(docsRepo repo.Repo, chunkSize int) Flusher {
-	return &flusher {
-		    repo : docsRepo,
-		    chunkSize: chunkSize,
+	return &flusher{
+		repo:      docsRepo,
+		chunkSize: chunkSize,
 	}
 }
 
@@ -31,7 +31,7 @@ func (f *flusher) Flush(ctx context.Context, docs []document.Document) []documen
 
 	for i := 0; i < len(chunks); i++ {
 		if err := f.repo.AddDocs(ctx, chunks[i]); err != nil {
-			return docs[i * int(f.chunkSize):]
+			return docs[i*int(f.chunkSize):]
 		}
 	}
 

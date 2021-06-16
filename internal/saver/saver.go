@@ -22,13 +22,13 @@ type Saver interface {
 
 type saver struct {
 	capacity int
-	f flusher.Flusher
-	a alarmer.Alarmer
-	data []document.Document
-	done chan struct{}
+	f        flusher.Flusher
+	a        alarmer.Alarmer
+	data     []document.Document
+	done     chan struct{}
 	strategy SaveStrategy
-	docCh chan document.Document
-	ctx context.Context
+	docCh    chan document.Document
+	ctx      context.Context
 }
 
 func New(ctx context.Context, capacity int, f flusher.Flusher, a alarmer.Alarmer, strategy SaveStrategy) Saver {
@@ -36,14 +36,14 @@ func New(ctx context.Context, capacity int, f flusher.Flusher, a alarmer.Alarmer
 	data := make([]document.Document, 0, capacity)
 	docCh := make(chan document.Document)
 	return &saver{
-		ctx: ctx,
+		ctx:      ctx,
 		capacity: capacity,
-		f: f,
-		a: a,
+		f:        f,
+		a:        a,
 		strategy: strategy,
-		data: data,
-		done: done,
-		docCh: docCh,
+		data:     data,
+		done:     done,
+		docCh:    docCh,
 	}
 }
 
@@ -88,4 +88,3 @@ func (s *saver) flushing() {
 func (s *saver) Init() {
 	go s.flushing()
 }
-

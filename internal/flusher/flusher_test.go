@@ -13,12 +13,12 @@ import (
 
 var _ = Describe("Flusher", func() {
 	var (
-		ctx context.Context
+		ctx  context.Context
 		ctrl *gomock.Controller
 
 		mockRepo *mocks.MockRepo
-		docs []document.Document
-		result []document.Document
+		docs     []document.Document
+		result   []document.Document
 
 		f flusher.Flusher
 
@@ -35,7 +35,7 @@ var _ = Describe("Flusher", func() {
 		mockRepo = mocks.NewMockRepo(ctrl)
 	})
 
-	JustBeforeEach(func(){
+	JustBeforeEach(func() {
 		f = flusher.New(mockRepo, chunkSize)
 		result = f.Flush(ctx, docs)
 	})
@@ -48,7 +48,7 @@ var _ = Describe("Flusher", func() {
 				{Id: 2},
 				{Id: 3},
 			}
-			mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1},{Id: 2}, {Id: 3}}).Return(nil)
+			mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1}, {Id: 2}, {Id: 3}}).Return(nil)
 		})
 
 		It("", func() {
@@ -67,8 +67,8 @@ var _ = Describe("Flusher", func() {
 
 			chunkSize = 2
 			gomock.InOrder(
-				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1},{Id: 2}}).Return(nil),
-				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 3},{Id: 4}}).Return(errors.New("testError")),
+				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1}, {Id: 2}}).Return(nil),
+				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 3}, {Id: 4}}).Return(errors.New("testError")),
 			)
 		})
 		expectedRes := []document.Document{

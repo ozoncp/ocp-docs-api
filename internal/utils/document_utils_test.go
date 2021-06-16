@@ -50,7 +50,6 @@ func SplitDocSliceWithNilStruct(t *testing.T) {
 	assert.Empty(t, result)
 }
 
-
 func TestConvertDocumentSliceToMap(t *testing.T) {
 	t.Run("withSimpleInput", ConvertSimpleInput)
 	t.Run("withNilInput", ConvertDocumentSliceToMapNilInput)

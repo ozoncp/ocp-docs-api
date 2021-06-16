@@ -17,9 +17,9 @@ type api struct {
 
 func toMessage(doc document.Document) *desc.Doc {
 	return &desc.Doc{
-		Id: doc.Id,
-		Name: doc.Name,
-		Link: doc.Link,
+		Id:         doc.Id,
+		Name:       doc.Name,
+		Link:       doc.Link,
 		SourceLink: doc.SourceLink,
 	}
 }
@@ -70,9 +70,9 @@ func (a *api) DescribeDocV1(
 
 	response := &desc.DescribeDocV1Response{
 		Doc: &desc.Doc{
-			Id: doc.Id,
-			Name: doc.Name,
-			Link: doc.Link,
+			Id:         doc.Id,
+			Name:       doc.Name,
+			Link:       doc.Link,
 			SourceLink: doc.SourceLink,
 		},
 	}
@@ -88,11 +88,11 @@ func (a *api) CreateDocV1(
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	log.Info().Msgf("Got CreateDocRequest: {name: %s, link: %s, source_link: %s}",
-																					req.Name, req.Link, req.SourceLink)
+		req.Name, req.Link, req.SourceLink)
 	doc := document.Document{
-					Name: req.Name,
-					Link: req.Link,
-					SourceLink: req.SourceLink,
+		Name:       req.Name,
+		Link:       req.Link,
+		SourceLink: req.SourceLink,
 	}
 	docId, err := a.repo.AddDoc(ctx, doc)
 
@@ -102,7 +102,7 @@ func (a *api) CreateDocV1(
 	}
 	log.Info().Msgf("Create doc with id = %d successfully", docId)
 
-	return &desc.CreateDocV1Response{Id:docId}, nil
+	return &desc.CreateDocV1Response{Id: docId}, nil
 }
 
 func (a *api) RemoveDocV1(

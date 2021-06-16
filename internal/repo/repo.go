@@ -10,7 +10,7 @@ import (
 
 type Repo interface {
 	AddDoc(ctx context.Context, doc document.Document) (uint64, error)
-	AddDocs(ctx context.Context, docs []document.Document)  error
+	AddDocs(ctx context.Context, docs []document.Document) error
 	RemoveDoc(ctx context.Context, docId uint64) error
 	DescribeDoc(ctx context.Context, docId uint64) (*document.Document, error)
 	ListDocs(ctx context.Context, limit, offset uint64) ([]document.Document, error)
@@ -21,20 +21,20 @@ const (
 )
 
 type repo struct {
-	 db sqlx.DB
+	db sqlx.DB
 }
 
 func New(db sqlx.DB) Repo {
-	return &repo{db:db}
+	return &repo{db: db}
 }
 
-func (r *repo) AddDoc(ctx context.Context, doc document.Document)  (uint64, error)  {
+func (r *repo) AddDoc(ctx context.Context, doc document.Document) (uint64, error) {
 	query := sq.Insert(tableName).
-				Columns("name", "link", "source_link").
-				Values(doc.Name, doc.Link, doc.SourceLink).
-				Suffix("RETURNING \"id\"").
-				RunWith(r.db).
-				PlaceholderFormat(sq.Dollar)
+		Columns("name", "link", "source_link").
+		Values(doc.Name, doc.Link, doc.SourceLink).
+		Suffix("RETURNING \"id\"").
+		RunWith(r.db).
+		PlaceholderFormat(sq.Dollar)
 
 	err := query.QueryRowContext(ctx).Scan(&doc.Id)
 
@@ -47,9 +47,9 @@ func (r *repo) AddDoc(ctx context.Context, doc document.Document)  (uint64, erro
 
 func (r *repo) RemoveDoc(ctx context.Context, docId uint64) error {
 	query := sq.Delete(tableName).
-				Where(sq.Eq{"id": docId}).
-				RunWith(r.db).
-				PlaceholderFormat(sq.Dollar)
+		Where(sq.Eq{"id": docId}).
+		RunWith(r.db).
+		PlaceholderFormat(sq.Dollar)
 	result, err := query.ExecContext(ctx)
 
 	if err != nil {
@@ -71,27 +71,27 @@ func (r *repo) RemoveDoc(ctx context.Context, docId uint64) error {
 
 func (r *repo) DescribeDoc(ctx context.Context, docId uint64) (*document.Document, error) {
 	query := sq.Select("id", "name", "link", "source_link").
-				From(tableName).
-				Where(sq.Eq{"id" : docId}).
-				RunWith(r.db).
-				PlaceholderFormat(sq.Dollar)
+		From(tableName).
+		Where(sq.Eq{"id": docId}).
+		RunWith(r.db).
+		PlaceholderFormat(sq.Dollar)
 
 	var doc document.Document
 	err := query.QueryRowContext(ctx).Scan(&doc.Id, &doc.Name, &doc.Link, &doc.SourceLink)
 	if err != nil {
 		return nil, err
 	}
- 	return &doc, nil
+	return &doc, nil
 }
 
 func (r *repo) ListDocs(ctx context.Context, limit, offset uint64) ([]document.Document, error) {
 	query := sq.Select("id", "name", "link", "source_link").
-				From(tableName).
-				RunWith(r.db).
-				Limit(limit).
-				Offset(offset).
-				PlaceholderFormat(sq.Dollar)
-	rows,err := query.QueryContext(ctx)
+		From(tableName).
+		RunWith(r.db).
+		Limit(limit).
+		Offset(offset).
+		PlaceholderFormat(sq.Dollar)
+	rows, err := query.QueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +108,6 @@ func (r *repo) ListDocs(ctx context.Context, limit, offset uint64) ([]document.D
 	return listDocs, nil
 }
 
-func (r *repo) AddDocs(ctx context.Context, docs []document.Document)  error {
+func (r *repo) AddDocs(ctx context.Context, docs []document.Document) error {
 	return nil
 }
