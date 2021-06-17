@@ -76,12 +76,8 @@ func (r *repo) DescribeDoc(ctx context.Context, docId uint64) (*document.Documen
 		RunWith(r.db).
 		PlaceholderFormat(sq.Dollar)
 
-	var doc document.Document
-	err := query.QueryRowContext(ctx).Scan(&doc.Id, &doc.Name, &doc.Link, &doc.SourceLink)
-	if err != nil {
-		return nil, err
-	}
-	return &doc, nil
+	doc := &document.Document{}
+	return doc, query.QueryRowContext(ctx).Scan(&doc.Id, &doc.Name, &doc.Link, &doc.SourceLink)
 }
 
 func (r *repo) ListDocs(ctx context.Context, limit, offset uint64) ([]document.Document, error) {

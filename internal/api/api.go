@@ -43,8 +43,7 @@ func (a *api) ListDocsV1(
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	var respDocs []*desc.Doc
-
+	respDocs := make([]*desc.Doc, 0, len(docs))
 	for _, doc := range docs {
 		respDocs = append(respDocs, toMessage(doc))
 	}
@@ -69,13 +68,9 @@ func (a *api) DescribeDocV1(
 	}
 
 	response := &desc.DescribeDocV1Response{
-		Doc: &desc.Doc{
-			Id:         doc.Id,
-			Name:       doc.Name,
-			Link:       doc.Link,
-			SourceLink: doc.SourceLink,
-		},
+		Doc: toMessage(*doc),
 	}
+
 	return response, nil
 }
 

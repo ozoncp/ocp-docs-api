@@ -120,10 +120,7 @@ var _ = Describe("Api", func() {
 
 			response, err := testApi.DescribeDocV1(ctx, request)
 			Expect(err).Should(BeNil())
-			Expect(response.Doc.Id).Should(Equal(uint64(1)))
-			Expect(response.Doc.Name).Should(Equal("testName"))
-			Expect(response.Doc.Link).Should(Equal("www"))
-			Expect(response.Doc.SourceLink).Should(Equal("com"))
+			Expect(response.Doc).Should(Equal(&desc.Doc{Id: 1, Name: "testName", Link: "www", SourceLink: "com"}))
 		})
 
 		It("Test incorrect describe doc", func() {
@@ -147,7 +144,7 @@ var _ = Describe("Api", func() {
 			}
 			docs := []document.Document{
 				{Id: 1, Name: "test1", Link: "link1", SourceLink: "srcLink1"},
-				{Id: 2, Name: "test2", Link: "link3", SourceLink: "srcLink3"},
+				{Id: 2, Name: "test2", Link: "link2", SourceLink: "srcLink2"},
 			}
 			query := fmt.Sprintf("SELECT (.+) FROM docs LIMIT %d OFFSET %d", request.Limit, request.Offset)
 			mock.ExpectQuery(query).
@@ -159,15 +156,14 @@ var _ = Describe("Api", func() {
 			response, err := testApi.ListDocsV1(ctx, request)
 
 			Expect(err).Should(BeNil())
-			Expect(response.Docs[0].Id).Should(Equal(docs[0].Id))
-			Expect(response.Docs[0].Name).Should(Equal(docs[0].Name))
-			Expect(response.Docs[0].Link).Should(Equal(docs[0].Link))
-			Expect(response.Docs[0].SourceLink).Should(Equal(docs[0].SourceLink))
-
-			Expect(response.Docs[1].Id).Should(Equal(docs[1].Id))
-			Expect(response.Docs[1].Name).Should(Equal(docs[1].Name))
-			Expect(response.Docs[1].Link).Should(Equal(docs[1].Link))
-			Expect(response.Docs[1].SourceLink).Should(Equal(docs[1].SourceLink))
+			Expect(response).Should(Equal(
+				&desc.ListDocsV1Response {
+					Docs: []*desc.Doc{
+						{Id: 1, Name: "test1", Link: "link1", SourceLink: "srcLink1"},
+						{Id: 2, Name: "test2", Link: "link2", SourceLink: "srcLink2"},
+					},
+				},
+				))
 		})
 
 		It("Test incorrect list doc", func() {
