@@ -1,6 +1,7 @@
 package flusher_test
 
 import (
+	"context"
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/ocp-docs-api/internal/flusher"
@@ -12,11 +13,12 @@ import (
 
 var _ = Describe("Flusher", func() {
 	var (
+		ctx  context.Context
 		ctrl *gomock.Controller
 
 		mockRepo *mocks.MockRepo
-		docs []document.Document
-		result []document.Document
+		docs     []document.Document
+		result   []document.Document
 
 		f flusher.Flusher
 
@@ -28,13 +30,14 @@ var _ = Describe("Flusher", func() {
 	})
 
 	BeforeEach(func() {
+		ctx = context.Background()
 		ctrl = gomock.NewController(GinkgoT())
 		mockRepo = mocks.NewMockRepo(ctrl)
 	})
 
-	JustBeforeEach(func(){
+	JustBeforeEach(func() {
 		f = flusher.New(mockRepo, chunkSize)
-		result = f.Flush(docs)
+		result = f.Flush(ctx, docs)
 	})
 
 	Context("repo save all tasks", func() {
@@ -45,7 +48,7 @@ var _ = Describe("Flusher", func() {
 				{Id: 2},
 				{Id: 3},
 			}
-			mockRepo.EXPECT().AddDocs([]document.Document{{Id: 1},{Id: 2}, {Id: 3}}).Return(nil)
+			mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1}, {Id: 2}, {Id: 3}}).Return(nil)
 		})
 
 		It("", func() {
@@ -64,8 +67,8 @@ var _ = Describe("Flusher", func() {
 
 			chunkSize = 2
 			gomock.InOrder(
-				mockRepo.EXPECT().AddDocs([]document.Document{{Id: 1},{Id: 2}}).Return(nil),
-				mockRepo.EXPECT().AddDocs([]document.Document{{Id: 3},{Id: 4}}).Return(errors.New("testError")),
+				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1}, {Id: 2}}).Return(nil),
+				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 3}, {Id: 4}}).Return(errors.New("testError")),
 			)
 		})
 		expectedRes := []document.Document{

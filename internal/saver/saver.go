@@ -1,6 +1,7 @@
 package saver
 
 import (
+	"context"
 	"github.com/ocp-docs-api/internal/alarmer"
 	"github.com/ocp-docs-api/internal/flusher"
 	"github.com/ocp-docs-api/internal/models/document"
@@ -21,26 +22,28 @@ type Saver interface {
 
 type saver struct {
 	capacity int
-	f flusher.Flusher
-	a alarmer.Alarmer
-	data []document.Document
-	done chan struct{}
+	f        flusher.Flusher
+	a        alarmer.Alarmer
+	data     []document.Document
+	done     chan struct{}
 	strategy SaveStrategy
-	docCh chan document.Document
+	docCh    chan document.Document
+	ctx      context.Context
 }
 
-func New(capacity int, f flusher.Flusher, a alarmer.Alarmer, strategy SaveStrategy) Saver {
+func New(ctx context.Context, capacity int, f flusher.Flusher, a alarmer.Alarmer, strategy SaveStrategy) Saver {
 	done := make(chan struct{})
 	data := make([]document.Document, 0, capacity)
 	docCh := make(chan document.Document)
 	return &saver{
+		ctx:      ctx,
 		capacity: capacity,
-		f: f,
-		a: a,
+		f:        f,
+		a:        a,
 		strategy: strategy,
-		data: data,
-		done: done,
-		docCh: docCh,
+		data:     data,
+		done:     done,
+		docCh:    docCh,
 	}
 }
 
@@ -56,14 +59,14 @@ func (s *saver) flushing() {
 	for {
 		select {
 		case <-s.a.Alarm():
-			flushRes := s.f.Flush(s.data)
+			flushRes := s.f.Flush(s.ctx, s.data)
 			if flushRes != nil {
 				s.data = flushRes
 			} else {
 				s.data = s.data[:0]
 			}
 		case <-s.done:
-			s.data = s.f.Flush(s.data)
+			s.data = s.f.Flush(s.ctx, s.data)
 			s.a.Close()
 			return
 		case task := <-s.docCh:
@@ -85,4 +88,3 @@ func (s *saver) flushing() {
 func (s *saver) Init() {
 	go s.flushing()
 }
-

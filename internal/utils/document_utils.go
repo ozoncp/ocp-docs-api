@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	errorInputSliceIsNil = errors.New("inpit slice is nil")
-	errorChunkSizeIsInvalid = errors.New("chunkSize is invalid")
-	errorKeyAlreadyExistInMap  = errors.New("key already exist in a map")
+	errorInputSliceIsNil      = errors.New("inpit slice is nil")
+	errorChunkSizeIsInvalid   = errors.New("chunkSize is invalid")
+	errorKeyAlreadyExistInMap = errors.New("key already exist in a map")
 )
 
 func SplitDocumentSlice(source []document.Document, chunkSize int) ([][]document.Document, error) {

@@ -10,7 +10,7 @@ func TestNewForDocument(t *testing.T) {
 	Name := "Doc1"
 	link := "Url1"
 	sourceLink := "Url2"
-	doc := &Document{id,  Name, link, sourceLink}
+	doc := &Document{id, Name, link, sourceLink}
 	if doc != nil {
 		return
 	} else {

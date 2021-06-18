@@ -1,6 +1,7 @@
 package saver_test
 
 import (
+	"context"
 	"github.com/golang/mock/gomock"
 	"github.com/ocp-docs-api/internal/alarmer"
 	"github.com/ocp-docs-api/internal/mocks"
@@ -14,7 +15,8 @@ import (
 
 var _ = Describe("Saver", func() {
 	var (
-		ctrl *gomock.Controller
+		ctx         context.Context
+		ctrl        *gomock.Controller
 		mockFlusher *mocks.MockFlusher
 	)
 
@@ -22,28 +24,27 @@ var _ = Describe("Saver", func() {
 		ctrl.Finish()
 	})
 
-	Describe("New Call", func(){
-		BeforeEach(func() {
-			ctrl = gomock.NewController(GinkgoT())
-			mockFlusher = mocks.NewMockFlusher(ctrl)
-		})
+	BeforeEach(func() {
+		ctrl = gomock.NewController(GinkgoT())
+		mockFlusher = mocks.NewMockFlusher(ctrl)
+		ctx = context.Background()
+	})
 
+	Describe("New Call", func() {
 		Context("Constructor with valid args", func() {
 			It("should return valid object", func() {
 				a := alarmer.New(time.Second)
-				got := saver.New(1, mockFlusher, a, saver.DropAll)
+				got := saver.New(ctx, 1, mockFlusher, a, saver.DropAll)
 				Ω(got).ShouldNot(BeNil())
 			})
 		})
 	})
 
-	Describe("Functionality", func(){
+	Describe("Functionality", func() {
 		var (
-			alarmer     *alarmerStub
+			alarmer *alarmerStub
 		)
 		BeforeEach(func() {
-			ctrl = gomock.NewController(GinkgoT())
-			mockFlusher = mocks.NewMockFlusher(ctrl)
 			alarmer = &alarmerStub{make(chan struct{})}
 		})
 
@@ -56,11 +57,11 @@ var _ = Describe("Saver", func() {
 				var wg sync.WaitGroup
 				wg.Add(1)
 				defer wg.Wait()
-				saver := saver.New(len(docs) + 1, mockFlusher, alarmer, saver.DropAll)
+				saver := saver.New(ctx, len(docs)+1, mockFlusher, alarmer, saver.DropAll)
 
 				gomock.InOrder(
-					mockFlusher.EXPECT().Flush(gomock.Eq(docs)),
-					mockFlusher.EXPECT().Flush(gomock.Eq(docs[:0])).Do(func(entities []document.Document) { wg.Done()}),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs)),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs[:0])).Do(func(ctx context.Context, entities []document.Document) { wg.Done() }),
 				)
 				saver.Init()
 
@@ -83,11 +84,11 @@ var _ = Describe("Saver", func() {
 				var wg sync.WaitGroup
 				wg.Add(1)
 				defer wg.Wait()
-				saver := saver.New(len(docs) + 1, mockFlusher, alarmer, saver.DropAll)
+				saver := saver.New(ctx, len(docs)+1, mockFlusher, alarmer, saver.DropAll)
 
 				gomock.InOrder(
-					mockFlusher.EXPECT().Flush(gomock.Eq(docs[:2])),
-					mockFlusher.EXPECT().Flush(gomock.Eq(docs[2:])).Do(func(entities []document.Document) { wg.Done()}),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs[:2])),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs[2:])).Do(func(ctx context.Context, entities []document.Document) { wg.Done() }),
 				)
 				saver.Init()
 
@@ -120,11 +121,11 @@ var _ = Describe("Saver", func() {
 				wg.Add(1)
 				defer wg.Wait()
 
-				saver := saver.New(len(docs), mockFlusher, alarmer, saver.DropAll)
+				saver := saver.New(ctx, len(docs), mockFlusher, alarmer, saver.DropAll)
 
 				gomock.InOrder(
-					mockFlusher.EXPECT().Flush(gomock.Eq(newDocs)),
-					mockFlusher.EXPECT().Flush(gomock.Eq(newDocs[:0])).Do(func(entities []document.Document) { wg.Done() }),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs)),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs[:0])).Do(func(ctx context.Context, entities []document.Document) { wg.Done() }),
 				)
 
 				saver.Init()
@@ -158,11 +159,11 @@ var _ = Describe("Saver", func() {
 				wg.Add(1)
 				defer wg.Wait()
 
-				saver := saver.New(len(docs), mockFlusher, alarmer, saver.DropOne)
+				saver := saver.New(ctx, len(docs), mockFlusher, alarmer, saver.DropOne)
 
 				gomock.InOrder(
-					mockFlusher.EXPECT().Flush(gomock.Eq(newDocs)),
-					mockFlusher.EXPECT().Flush(gomock.Eq(newDocs[:0])).Do(func(entities []document.Document) { wg.Done() }),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs)),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(newDocs[:0])).Do(func(ctx context.Context, entities []document.Document) { wg.Done() }),
 				)
 
 				saver.Init()
@@ -187,11 +188,11 @@ var _ = Describe("Saver", func() {
 				var wg sync.WaitGroup
 				wg.Add(1)
 				defer wg.Wait()
-				saver := saver.New(len(docs) + 1, mockFlusher, alarmer, saver.DropAll)
+				saver := saver.New(ctx, len(docs)+1, mockFlusher, alarmer, saver.DropAll)
 
 				gomock.InOrder(
-					mockFlusher.EXPECT().Flush(gomock.Eq(docs)).Return([]document.Document{{Id: 3}, {Id: 4}}),
-					mockFlusher.EXPECT().Flush(gomock.Eq([]document.Document{{Id: 3}, {Id: 4}})).Do(func(entities []document.Document) { wg.Done()}),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs)).Return([]document.Document{{Id: 3}, {Id: 4}}),
+					mockFlusher.EXPECT().Flush(ctx, gomock.Eq([]document.Document{{Id: 3}, {Id: 4}})).Do(func(ctx context.Context, entities []document.Document) { wg.Done() }),
 				)
 				saver.Init()
 
@@ -218,8 +219,8 @@ func (a *alarmerStub) alarm() {
 	a.alarms <- struct{}{}
 }
 
-func (a * alarmerStub) Close() {
+func (a *alarmerStub) Close() {
 }
 
-func (a * alarmerStub) Init() {
+func (a *alarmerStub) Init() {
 }
