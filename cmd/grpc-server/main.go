@@ -3,23 +3,24 @@ package main
 import (
 	"flag"
 	"fmt"
+	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
-	"github.com/ocp-docs-api/internal/repo"
-	"net"
-	"os"
-
+	_ "github.com/lib/pq"
 	"github.com/ocp-docs-api/internal/api"
+	"github.com/ocp-docs-api/internal/repo"
 	desc "github.com/ocp-docs-api/pkg/ocp-docs-api"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"net"
+	"os"
 )
 
 var grpcPort int
 
 func init() {
-	flag.IntVar(&grpcPort, "port", 1235, "GRPC server port")
+	flag.IntVar(&grpcPort, "port", 82, "GRPC server port")
 }
 
 const (
@@ -27,10 +28,11 @@ const (
 	port     = 5432
 	user     = "postgres"
 	password = "test"
-	dbname   = "testdb"
+	dbname   = "postgres"
 )
 
 func main() {
+	fmt.Println("TEST RUN!!")
 	flag.Parse()
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	grpcEndpoint := fmt.Sprintf("localhost:%d", grpcPort)
@@ -51,12 +53,18 @@ func main() {
 		host, port, user, password, dbname)
 
 	db, err := sqlx.Open("pgx", psqlInfo)
+	err = db.Ping()
+	if err != nil {
+		log.Error().Err(err).Msgf("failed to ping to database")
+		fmt.Println("failed ping")
+	}
+	fmt.Println("nice ping")
 
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to create connect to database")
 	}
 
-	repo := repo.New(*db)
+	repo := repo.New(*db, 5)
 	desc.RegisterOcpDocsApiServer(grpcServer, api.NewDocsApi(repo))
 
 	if err = grpcServer.Serve(lis); err != nil {
