@@ -23,14 +23,17 @@ var _ = Describe("Api", func() {
 		db      *sql.DB
 		sqlxDB  *sqlx.DB
 		err     error
+		chunkSize int
 	)
 	BeforeEach(func() {
 		ctx = context.Background()
 		db, mock, err = sqlmock.New()
+		chunkSize = 3
 		Expect(err).Should(BeNil())
 
 		sqlxDB = sqlx.NewDb(db, "sqlmock")
-		testApi = api.NewDocsApi(repo.New(*sqlxDB))
+		testApi = api.NewDocsApi(repo.New(*sqlxDB, chunkSize))
+
 	})
 
 	AfterEach(func() {
@@ -73,6 +76,84 @@ var _ = Describe("Api", func() {
 			response, err := testApi.CreateDocV1(ctx, request)
 			Expect(err).ShouldNot(BeNil())
 			Expect(response).Should(BeNil())
+		})
+
+		It("Test correct multi-creation", func(){
+			request := &desc.MultiCreateDocsV1Request{
+				Docs: []*desc.Doc{
+					{Id: 1, Name: "test1", Link: "www1", SourceLink: "com1"},
+				    {Id: 2, Name: "test2", Link: "www2", SourceLink: "com2"},
+					{Id: 3, Name: "test3", Link: "www3", SourceLink: "com3"}},
+			}
+
+			mock.ExpectExec("INSERT INTO docs").
+				WithArgs("test1", "www1", "com1",
+					     "test2", "www2", "com2",
+				         "test3", "www3", "com3").WillReturnResult(sqlmock.NewResult(3, 3))
+
+			response, err := testApi.MultiCreateDocsV1(ctx, request)
+			Expect(err).Should(BeNil())
+			Expect(response.DocsAdded).Should(Equal(uint64(3)))
+		})
+
+		It("Test incorrect multi-creation", func(){
+			request := &desc.MultiCreateDocsV1Request{
+				Docs: []*desc.Doc{
+					{Id: 1, Name: "test1", Link: "www1", SourceLink: "com1"},
+					{Id: 2, Name: "test2", Link: "www2", SourceLink: "com2"},
+					{Id: 3, Name: "test3", Link: "www3", SourceLink: "com3"}},
+			}
+
+			mock.ExpectExec("INSERT INTO docs").
+				WithArgs("test1", "www1", "com1",
+					"test2", "www2", "com2",
+					"test3", "www3", "com3").WillReturnError(errors.New("failed to execute sql request"))
+
+			response, err := testApi.MultiCreateDocsV1(ctx, request)
+			Expect(err).ShouldNot(BeNil())
+			Expect(response).Should(BeNil())
+		})
+
+		It("Test update doc", func(){
+			doc := &desc.Doc{
+				Id: 1,
+				Name: "test1",
+				Link: "www1",
+				SourceLink: "com1",
+			}
+
+			request := &desc.UpdateDocV1Request{
+				Doc : doc,
+			}
+
+			mock.ExpectExec("UPDATE docs").
+				 WithArgs("test1", "www1", "com1", 1).
+				 WillReturnResult(sqlmock.NewResult(0, 1))
+
+			response, err := testApi.UpdateDocV1(ctx, request)
+			Expect(err).Should(BeNil())
+			Expect(response.Found).Should(Equal(true))
+		})
+
+		It("Test incorrect update doc", func(){
+			doc := &desc.Doc{
+				Id: 1,
+				Name: "test1",
+				Link: "www1",
+				SourceLink: "com1",
+			}
+
+			request := &desc.UpdateDocV1Request{
+				Doc : doc,
+			}
+
+			mock.ExpectExec("UPDATE docs").
+				WithArgs("test1", "www1", "com1", 1).
+				WillReturnError(errors.New("failed to execute sql request"))
+
+			response, err := testApi.UpdateDocV1(ctx, request)
+			Expect(err).ShouldNot(BeNil())
+			Expect(response.Found).Should(Equal(false))
 		})
 
 		It("Test remove doc", func() {

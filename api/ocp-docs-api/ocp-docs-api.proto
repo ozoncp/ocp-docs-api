@@ -11,27 +11,45 @@ option go_package = "github.com/ozoncp/ocp-docs-api/pkg/ocp-docs-api;ocp_docs_ap
 
 service OcpDocsApi {
 
+    // List docs
     rpc ListDocsV1(ListDocsV1Request) returns (ListDocsV1Response) {
         option (google.api.http) = {
             get: "/v1/docs"
         };
     }
 
+    // Describe doc
     rpc DescribeDocV1(DescribeDocV1Request) returns (DescribeDocV1Response) {
         option (google.api.http) = {
             get: "/v1/docs/{id}"
         };
     }
 
+    // Create doc
     rpc CreateDocV1(CreateDocV1Request) returns (CreateDocV1Response) {
         option (google.api.http) = {
             post: "/v1/docs"
         };
     }
 
+    // Remove doc
     rpc RemoveDocV1(RemoveDocV1Request) returns (RemoveDocV1Response) {
         option (google.api.http) = {
             delete: "/v1/docs/{id}"
+        };
+    }
+
+    // Update doc
+    rpc UpdateDocV1(UpdateDocV1Request) returns (UpdateDocV1Response) {
+        option (google.api.http) = {
+            post: "/v1/doc"
+        };
+    }
+
+    // Multi create docs
+    rpc MultiCreateDocsV1(MultiCreateDocsV1Request) returns (MultiCreateDocsV1Response) {
+        option (google.api.http) = {
+            post: "/v1/docs"
         };
     }
 }
@@ -71,6 +89,22 @@ message RemoveDocV1Request {
 
 message RemoveDocV1Response {
     bool found = 1;
+}
+
+message UpdateDocV1Request {
+    Doc doc = 1;
+}
+
+message UpdateDocV1Response {
+    bool found = 1;
+}
+
+message MultiCreateDocsV1Request {
+    repeated Doc docs = 1;
+}
+
+message MultiCreateDocsV1Response {
+    uint64 docs_added = 1;
 }
 
 message Doc {

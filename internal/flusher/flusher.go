@@ -30,7 +30,7 @@ func (f *flusher) Flush(ctx context.Context, docs []document.Document) []documen
 	}
 
 	for i := 0; i < len(chunks); i++ {
-		if err := f.repo.AddDocs(ctx, chunks[i]); err != nil {
+		if _, err := f.repo.AddDocs(ctx, chunks[i]); err != nil {
 			return docs[i*int(f.chunkSize):]
 		}
 	}

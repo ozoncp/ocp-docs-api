@@ -24,6 +24,15 @@ func toMessage(doc document.Document) *desc.Doc {
 	}
 }
 
+func fromMessage(doc *desc.Doc) document.Document {
+	return document.Document{
+		Id:          doc.Id,
+		Name:        doc.Name,
+		Link:        doc.Link,
+		SourceLink:  doc.SourceLink,
+	}
+}
+
 func NewDocsApi(repo repo.Repo) desc.OcpDocsApiServer {
 	return &api{repo: repo}
 }
@@ -117,4 +126,52 @@ func (a *api) RemoveDocV1(
 	}
 	log.Info().Msgf("Doc %d was deleted", req.Id)
 	return &desc.RemoveDocV1Response{Found: true}, nil
+}
+
+func (a *api) UpdateDocV1(
+	ctx context.Context,
+	req *desc.UpdateDocV1Request,
+) (*desc.UpdateDocV1Response, error) {
+	log.Info().Msgf("Update doc (id: %d) ...", req.Doc.Id)
+
+	if err := req.Validate(); err != nil {
+		log.Error().Err(err).Msg("invalid argument")
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	if err := a.repo.UpdateDoc(ctx, fromMessage(req.Doc)); err != nil {
+		log.Error().Err(err).Msg("Failed to update doc")
+		return &desc.UpdateDocV1Response{Found: false}, err
+	}
+	log.Info().Msgf("Doc was updated")
+	return &desc.UpdateDocV1Response{Found: true}, nil
+}
+
+func (a *api) MultiCreateDocsV1(
+	ctx context.Context,
+	req *desc.MultiCreateDocsV1Request,
+) (*desc.MultiCreateDocsV1Response, error){
+	log.Info().Msg("Multi create docs ...")
+
+	if err := req.Validate(); err != nil {
+		log.Error().Err(err).Msg("invalid argument")
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	docs := make([]document.Document, 0, len(req.Docs))
+
+	for _, val := range req.Docs {
+		docs = append(docs, fromMessage(val))
+	}
+	numberOfDocsCreated, err := a.repo.AddDocs(ctx, docs)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to multi create notes")
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	log.Info().Msgf("Multi create notes success")
+
+	return &desc.MultiCreateDocsV1Response{
+		DocsAdded: numberOfDocsCreated,
+	}, nil
 }
