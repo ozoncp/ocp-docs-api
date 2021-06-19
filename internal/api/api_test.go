@@ -64,7 +64,7 @@ var _ = Describe("Api", func() {
 					WithArgs(request.Name, request.Link, request.SourceLink).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 				Expect(testApi).ShouldNot(BeNil())
-				dataProducerMock.EXPECT().SendMessage(gomock.Any())
+				dataProducerMock.EXPECT().SendMessage("CreateDocV1 succesful")
 				response, err := testApi.CreateDocV1(ctx, request)
 				Expect(err).Should(BeNil())
 				Expect(response.Id).Should(BeEquivalentTo(1))
@@ -107,7 +107,7 @@ var _ = Describe("Api", func() {
 					WithArgs("test1", "www1", "com1",
 						"test2", "www2", "com2",
 						"test3", "www3", "com3").WillReturnResult(sqlmock.NewResult(3, 3))
-				dataProducerMock.EXPECT().SendMessage(gomock.Any())
+				dataProducerMock.EXPECT().SendMessage("MultiCreateDocV1 successful")
 
 				response, err := testApi.MultiCreateDocsV1(ctx, request)
 				Expect(err).Should(BeNil())
@@ -135,8 +135,6 @@ var _ = Describe("Api", func() {
 
 		Context("Update docs", func(){
 			BeforeEach(func() {
-				//prod, err = producer.NewProducer("TestOcpDocsApiUpdate")
-				//Expect(err).Should(BeNil())
 				testApi = api.NewDocsApi(repo.New(*sqlxDB, chunkSize), dataProducerMock)
 			})
 
@@ -155,7 +153,7 @@ var _ = Describe("Api", func() {
 				mock.ExpectExec("UPDATE docs").
 					WithArgs("test1", "www1", "com1", 1).
 					WillReturnResult(sqlmock.NewResult(0, 1))
-				dataProducerMock.EXPECT().SendMessage(gomock.Any())
+				dataProducerMock.EXPECT().SendMessage("UpdateDocV1 successful")
 
 				response, err := testApi.UpdateDocV1(ctx, request)
 				Expect(err).Should(BeNil())
@@ -199,7 +197,7 @@ var _ = Describe("Api", func() {
 				mock.ExpectExec("DELETE FROM docs").
 					WithArgs(request.Id).
 					WillReturnResult(sqlmock.NewResult(0, 1))
-				dataProducerMock.EXPECT().SendMessage(gomock.Any())
+				dataProducerMock.EXPECT().SendMessage("RemoveDocV1 successful")
 
 				Expect(testApi).ShouldNot(BeNil())
 
@@ -242,7 +240,7 @@ var _ = Describe("Api", func() {
 					WillReturnRows(sqlmock.
 						NewRows([]string{"id", "name", "link", "source_link"}).
 						AddRow(1, "testName", "www", "com"))
-				dataProducerMock.EXPECT().SendMessage(gomock.Any())
+				dataProducerMock.EXPECT().SendMessage("DescribeDocV1 successful")
 
 				response, err := testApi.DescribeDocV1(ctx, request)
 				Expect(err).Should(BeNil())
@@ -286,7 +284,7 @@ var _ = Describe("Api", func() {
 						NewRows([]string{"id", "name", "link", "source_link"}).
 						AddRow(docs[0].Id, docs[0].Name, docs[0].Link, docs[0].SourceLink).
 						AddRow(docs[1].Id, docs[1].Name, docs[1].Link, docs[1].SourceLink))
-				dataProducerMock.EXPECT().SendMessage(gomock.Any())
+				dataProducerMock.EXPECT().SendMessage("ListDocsV1 successful")
 
 				response, err := testApi.ListDocsV1(ctx, request)
 

@@ -77,10 +77,7 @@ func (a *api) MultiCreateDocsV1(
 	req *desc.MultiCreateDocsV1Request,
 ) (*desc.MultiCreateDocsV1Response, error){
 	log.Info().Msg("Multi create docs ...")
-	span := opentracing.SpanFromContext(ctx)
-	if span == nil {
-		span = opentracing.GlobalTracer().StartSpan("MultiCreateDocV1")
-	}
+	span, ctx := opentracing.StartSpanFromContext(ctx, "MultiCreateDocsV1")
 	defer span.Finish()
 	if err := req.Validate(); err != nil {
 		log.Error().Err(err).Msg("invalid argument")
@@ -101,6 +98,7 @@ func (a *api) MultiCreateDocsV1(
 	a.prod.SendMessage("MultiCreateDocV1 successful")
 	log.Info().Msgf("MultiCreateDocV1 successful")
 
+	span.SetTag("docs-created", numberOfDocsCreated)
 	return &desc.MultiCreateDocsV1Response{
 		DocsAdded: numberOfDocsCreated,
 	}, nil

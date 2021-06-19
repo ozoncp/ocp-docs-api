@@ -15,13 +15,12 @@ type producer struct {
 	topic     string
 }
 
-func NewProducer(topic string) (Producer, error) {
+func NewProducer(brokers []string, topic string) (Producer, error) {
 	config := sarama.NewConfig()
 	config.Producer.Partitioner = sarama.NewRandomPartitioner
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Return.Successes = true
-	config.ClientID = "123"
-	kafkaProd, err := sarama.NewSyncProducer([]string{"127.0.0.1:9092:9092"}, config)
+	kafkaProd, err := sarama.NewSyncProducer(brokers, config)
 	if err != nil {
 		return nil, err
 	}

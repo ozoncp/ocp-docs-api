@@ -1,17 +1,17 @@
 version: "3"
 
 services:
-  doc_db:
-    container_name: testdb_1
+  database:
     image: postgres
+    ports:
+      - "5432:5432"
     restart: always
-    environment:
-      - POSTGRES_PASSWORD=test
-      - POSTGRES_USER=postgres
     volumes:
       - ./data_db:/var/lib/postgresql/data
-    ports:
-      - "5434:5434"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
 
   zookeeper:
     image: zookeeper:3.5.6
@@ -45,14 +45,15 @@ services:
     image: prom/prometheus
     ports:
       - "9090:9090"
+
   app:
     build: .
     ports:
-      - "82:82"
+      - "7002:7002"
     restart: unless-stopped
     depends_on:
-      - doc_db
+      - database
       - kafka
     links:
-      - doc_db
+      - database
       - kafka

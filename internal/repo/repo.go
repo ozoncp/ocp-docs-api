@@ -3,10 +3,12 @@ package repo
 import (
 	"context"
 	"errors"
+	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"github.com/ocp-docs-api/internal/models/document"
 	"github.com/ocp-docs-api/internal/utils"
+	"github.com/opentracing/opentracing-go"
 	"github.com/rs/zerolog/log"
 )
 
@@ -113,14 +115,18 @@ func (r *repo) ListDocs(ctx context.Context, limit, offset uint64) ([]document.D
 
 func (r *repo) AddDocs(ctx context.Context, docs []document.Document) (uint64, error) {
 	chunks, err := utils.SplitDocumentSlice(docs, r.chunkSize)
-	var numberOfNotesCreated int64 = 0
+	var numberOfDocsCreated int64 = 0
 
 	if err != nil {
-	 	return uint64(numberOfNotesCreated), err
+	 	return uint64(numberOfDocsCreated), err
 	}
 
-	for _, val := range chunks {
+	for i, val := range chunks {
 		err := func() error {
+			spanName := "Add_docs" + fmt.Sprintf("%v", i)
+			span, _ := opentracing.StartSpanFromContext(ctx, spanName)
+			defer span.Finish()
+
 			query := sq.Insert(tableName).
 				Columns("name", "link", "source_link").
 				RunWith(r.db).
@@ -142,16 +148,17 @@ func (r *repo) AddDocs(ctx context.Context, docs []document.Document) (uint64, e
 				return err
 			}
 
-			numberOfNotesCreated += rowsAffected
+			numberOfDocsCreated += rowsAffected
+			span.SetTag("docs-added-in-db", numberOfDocsCreated)
 			return nil
 		}()
 
 		if err != nil {
-			return uint64(numberOfNotesCreated), err
+			return uint64(numberOfDocsCreated), err
 		}
 	}
 
-	return uint64(numberOfNotesCreated), nil
+	return uint64(numberOfDocsCreated), nil
 }
 
 func (r *repo) UpdateDoc(ctx context.Context, doc document.Document) error {
