@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	grpcPort = 82
+	grpcPort  = 82
 	chunkSize = 5
 )
 
@@ -49,6 +49,10 @@ func runGrpc() error {
 		host, port, user, password, dbname)
 
 	db, err := sqlx.Open("pgx", psqlInfo)
+	if err != nil {
+		log.Error().Err(err).Msgf("db can't be open")
+		return nil
+	}
 	err = db.Ping()
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to ping to database")
