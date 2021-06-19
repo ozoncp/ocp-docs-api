@@ -34,5 +34,5 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 COPY --from=builder /home/developer/go/src/github.com/ozoncp/ocp-docs-api/bin/ocp-docs-api .
 RUN chown root:root ocp-docs-api
-EXPOSE 82
+#EXPOSE 82
 CMD ["./ocp-docs-api"]
