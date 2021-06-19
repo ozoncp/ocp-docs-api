@@ -8,7 +8,9 @@ require (
 	github.com/Shopify/sarama v1.29.0
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.6.1
+	github.com/fullstorydev/grpcui v1.1.0 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
+	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -27,6 +29,7 @@ require (
 	golang.org/x/sys v0.0.0-20210608053332-aa57babbf139 // indirect
 	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced
 	google.golang.org/grpc v1.38.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
 	google.golang.org/protobuf v1.26.0
 )
 
