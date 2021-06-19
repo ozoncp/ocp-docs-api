@@ -112,6 +112,7 @@ func connectToDataBase() (*sqlx.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		dbHost, dbPort, dbUser, dbPassword, dbName)
+
 	db, err := sqlx.Open("pgx", psqlInfo)
 	if err != nil {
 		log.Error().Err(err).Msgf("db can't be open")

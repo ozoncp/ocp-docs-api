@@ -7,7 +7,7 @@ services:
       - "5432:5432"
     restart: always
     volumes:
-      - ./data_db:/var/lib/postgresql/data
+      - ./database:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
