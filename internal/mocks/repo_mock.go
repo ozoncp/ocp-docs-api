@@ -51,11 +51,12 @@ func (mr *MockRepoMockRecorder) AddDoc(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // AddDocs mocks base method.
-func (m *MockRepo) AddDocs(arg0 context.Context, arg1 []document.Document) error {
+func (m *MockRepo) AddDocs(arg0 context.Context, arg1 []document.Document) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddDocs", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AddDocs indicates an expected call of AddDocs.
@@ -106,4 +107,18 @@ func (m *MockRepo) RemoveDoc(arg0 context.Context, arg1 uint64) error {
 func (mr *MockRepoMockRecorder) RemoveDoc(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveDoc", reflect.TypeOf((*MockRepo)(nil).RemoveDoc), arg0, arg1)
+}
+
+// UpdateDoc mocks base method.
+func (m *MockRepo) UpdateDoc(arg0 context.Context, arg1 document.Document) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateDoc", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDoc indicates an expected call of UpdateDoc.
+func (mr *MockRepoMockRecorder) UpdateDoc(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDoc", reflect.TypeOf((*MockRepo)(nil).UpdateDoc), arg0, arg1)
 }

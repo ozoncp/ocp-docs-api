@@ -48,7 +48,7 @@ var _ = Describe("Flusher", func() {
 				{Id: 2},
 				{Id: 3},
 			}
-			mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1}, {Id: 2}, {Id: 3}}).Return(nil)
+			mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1}, {Id: 2}, {Id: 3}}).Return(uint64(3),nil)
 		})
 
 		It("", func() {
@@ -67,8 +67,8 @@ var _ = Describe("Flusher", func() {
 
 			chunkSize = 2
 			gomock.InOrder(
-				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1}, {Id: 2}}).Return(nil),
-				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 3}, {Id: 4}}).Return(errors.New("testError")),
+				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1}, {Id: 2}}).Return(uint64(2), nil),
+				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 3}, {Id: 4}}).Return(uint64(0), errors.New("testError")),
 			)
 		})
 		expectedRes := []document.Document{

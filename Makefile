@@ -20,14 +20,14 @@ PHONY: .generate
 
 PHONY: .build
 .build:
-		CGO_ENABLED=0 GOOS=linux go build -o bin/ocp-docs-api cmd/ocp-docs-api/main.go
+		CGO_ENABLED=0 GOOS=linux go build -o bin/ocp-docs-api cmd/grpc-server/main.go
 
 PHONY: install
 install: build .install
 
 PHONY: .install
 install:
-		go install cmd/ocp-docs-api/main.go
+		go install cmd/grpc-server/main.go
 
 PHONY: vendor-proto
 vendor-proto: .vendor-proto
@@ -44,10 +44,17 @@ PHONY: .vendor-proto
 			rm -rf vendor.protogen/googleapis ;\
 		fi
 		@if [ ! -d vendor.protogen/github.com/envoyproxy ]; then \
-			mkdir -p vendor.protogen/github.com/envoyproxy &&\
-			git clone https://github.com/envoyproxy/protoc-gen-validate vendor.protogen/github.com/envoyproxy/protoc-gen-validate ;\
+			mkdir -p vendor.protogen/validate &&\
+			git clone https://github.com/envoyproxy/protoc-gen-validate vendor.protogen/protoc-gen-validate &&\
+			mv vendor.protogen/protoc-gen-validate/validate/*.proto vendor.protogen/validate &&\
+			rm -rf vendor.protogen/protoc-gen-validate ;\
 		fi
-
+		@if [ ! -d vendor.protogen/google/protobuf ]; then \
+			git clone https://github.com/protocolbuffers/protobuf vendor.protogen/protobuf &&\
+			mkdir -p  vendor.protogen/google/protobuf &&\
+			mv vendor.protogen/protobuf/src/google/protobuf/*.proto vendor.protogen/google/protobuf &&\
+			rm -rf vendor.protogen/protobuf ;\
+		fi
 
 .PHONY: deps
 deps: install-go-deps
@@ -64,3 +71,10 @@ install-go-deps: .install-go-deps
 		go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
 		go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 		go install github.com/envoyproxy/protoc-gen-validate
+		go get github.com/fullstorydev/grpcui/...
+
+run:
+	go run cmd/grpc-server/main.go
+
+lint:
+	golangci-lint run
