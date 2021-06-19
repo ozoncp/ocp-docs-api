@@ -165,8 +165,8 @@ func (r *repo) UpdateDoc(ctx context.Context, doc document.Document) error {
 	query := sq.Update(tableName).
 			Where(sq.Eq{"id": doc.Id}).
 		    Set("name", doc.Name).
-			Set("link", doc.Link).
-			Set("source_link", doc.SourceLink).
+		    Set("link", doc.Link).
+		    Set("source_link", doc.SourceLink).
 		    RunWith(r.db).
 		    PlaceholderFormat(sq.Dollar)
 

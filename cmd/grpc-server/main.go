@@ -27,7 +27,7 @@ const (
 
 const (
 	dbHost     = "database"
-	dbPort     = "database:5432"
+	dbPort     = "5432"
 	dbUser     = "postgres"
 	dbPassword = "postgres"
 	dbName     = "postgres"
