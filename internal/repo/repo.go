@@ -6,6 +6,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"github.com/ocp-docs-api/internal/models/document"
+	"github.com/opentracing/opentracing-go"
 	"github.com/rs/zerolog/log"
 )
 
@@ -110,6 +111,8 @@ func (r *repo) ListDocs(ctx context.Context, limit, offset uint64) ([]document.D
 
 func (r *repo) AddDocs(ctx context.Context, docs []document.Document) ([]uint64, error) {
 	log.Printf("Add docs to database")
+	span, childContext := opentracing.StartSpanFromContext(ctx, "AddDocs")
+	defer span.Finish()
 
 	query := sq.Insert(tableName).
 		Columns("name", "link", "source_link").
@@ -121,7 +124,7 @@ func (r *repo) AddDocs(ctx context.Context, docs []document.Document) ([]uint64,
 		query = query.Values(doc.Name, doc.Link, doc.SourceLink)
 	}
 
-	rows, err := query.QueryContext(ctx)
+	rows, err := query.QueryContext(childContext)
 
 	added := make([]uint64, 0, len(docs))
 	if err != nil {
@@ -137,7 +140,7 @@ func (r *repo) AddDocs(ctx context.Context, docs []document.Document) ([]uint64,
 		}
 		added = append(added, id)
 	}
-
+	span.SetTag("docs-added-in-db", len(added))
 
 	return added, nil
 }

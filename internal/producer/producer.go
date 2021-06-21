@@ -18,7 +18,6 @@ const (
 type Message struct {
 	Type  EventType
 	Id    uint64
-	Body  map[string]interface{}
 }
 
 type Producer interface {
@@ -72,5 +71,3 @@ func (prod *producer) SendMessage(msg Message) bool {
 func (prod *producer) Close() error {
 	return prod.kafkaProd.Close()
 }
-
-

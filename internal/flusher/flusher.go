@@ -2,11 +2,9 @@ package flusher
 
 import (
 	"context"
-	"fmt"
 	"github.com/ocp-docs-api/internal/models/document"
 	"github.com/ocp-docs-api/internal/repo"
 	"github.com/ocp-docs-api/internal/utils"
-	"github.com/opentracing/opentracing-go"
 )
 
 type Flusher interface {
@@ -33,12 +31,8 @@ func (f *flusher) Flush(ctx context.Context, docs []document.Document) ([]docume
 		return docs, successFullIds, err
 	}
 	for i := 0; i < len(chunks); i++ {
-		spanName := "Flush_docs" + fmt.Sprintf("%v", i)
-		span, childContext := opentracing.StartSpanFromContext(ctx, spanName)
-		ids, err := f.repo.AddDocs(childContext, chunks[i])
+		ids, err := f.repo.AddDocs(ctx, chunks[i])
 		successFullIds = append(successFullIds, ids...)
-		span.SetTag("docs-added-in-db", len(ids))
-		span.Finish()
 		if err != nil {
 			return docs[i*int(f.chunkSize):], successFullIds, err
 		}

@@ -12,12 +12,12 @@ import (
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"time"
 )
 
 type api struct {
 	desc.UnimplementedOcpDocsApiServer
 	repo repo.Repo
+	flusher flusher.Flusher
 	prod producer.Producer
 }
 
@@ -52,9 +52,11 @@ func fromMessageNewDoc(doc *desc.NewDoc, id uint64) document.Document {
 	}
 }
 
-func NewDocsApi(repo repo.Repo, prod producer.Producer) desc.OcpDocsApiServer {
-	return &api{repo: repo,
-				prod: prod,
+func NewDocsApi(repo repo.Repo, flusher flusher.Flusher, prod producer.Producer) desc.OcpDocsApiServer {
+	return &api{
+		repo: repo,
+		prod: prod,
+		flusher: flusher,
 	}
 }
 
@@ -75,7 +77,7 @@ func (a *api) CreateDocV1(
 		log.Error().Err(err).Msg("failed to CreateDoc")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	createMessage(producer.Created, docId)
+	a.prod.SendMessage(createMessage(producer.Created, docId))
 	metrics.IncrementSuccessfulCreate(1)
 
 	log.Info().Msgf("Create doc with id = %d successfully", docId)
@@ -100,8 +102,7 @@ func (a *api) MultiCreateDocsV1(
 		docs = append(docs, fromMessageDoc(val))
 	}
 
-	flusher := flusher.New(a.repo, chunks)
-	_, idOfCreatedDocs, err := flusher.Flush(ctx, docs)
+	_, idOfCreatedDocs, err := a.flusher.Flush(ctx, docs)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to multi create docs")
@@ -110,7 +111,7 @@ func (a *api) MultiCreateDocsV1(
 
 	numberOfCreatedDocs := len(idOfCreatedDocs)
 	for _, val := range idOfCreatedDocs {
-		createMessage(producer.Created, val)
+		a.prod.SendMessage(createMessage(producer.Created, val))
 	}
 	metrics.IncrementSuccessfulCreate(numberOfCreatedDocs)
 	log.Info().Msgf("MultiCreateDocV1 successful")
@@ -136,7 +137,7 @@ func (a *api) UpdateDocV1(
 		log.Error().Err(err).Msg("Failed to update doc")
 		return &desc.UpdateDocV1Response{Found: false}, err
 	}
-	createMessage(producer.Updated, req.Id)
+	a.prod.SendMessage(createMessage(producer.Updated, req.Id))
 	metrics.IncrementSuccessfulUpdate(1)
 	log.Info().Msgf("Doc was updated")
 	return &desc.UpdateDocV1Response{Found: true}, nil
@@ -160,7 +161,7 @@ func (a *api) ListDocsV1(
 	respDocs := make([]*desc.Doc, 0, len(docs))
 	for _, doc := range docs {
 		respDocs = append(respDocs, toMessage(doc))
-		createMessage(producer.Updated, doc.Id)
+		a.prod.SendMessage(createMessage(producer.Updated, doc.Id))
 	}
 
 	metrics.IncrementSuccessfulRead(len(respDocs))
@@ -188,7 +189,7 @@ func (a *api) DescribeDocV1(
 	response := &desc.DescribeDocV1Response{
 		Doc: toMessage(*doc),
 	}
-
+	a.prod.SendMessage(createMessage(producer.Described, req.Id))
 	metrics.IncrementSuccessfulRead(1)
 
 	return response, nil
@@ -211,7 +212,7 @@ func (a *api) RemoveDocV1(
 	}
 	log.Info().Msgf("Doc %d was deleted", req.Id)
 
-	createMessage(producer.Removed, req.Id)
+	a.prod.SendMessage(createMessage(producer.Removed, req.Id))
 	metrics.IncrementSuccessfulDelete(1)
 
 	return &desc.RemoveDocV1Response{Found: true}, nil
@@ -221,8 +222,5 @@ func createMessage(Type producer.EventType, id uint64) producer.Message {
 	return producer.Message{
 		Type: Type,
 		Id:  id,
-		Body: map[string]interface{}{
-			"TimesStamp": time.Now(),
-		},
 	}
 }

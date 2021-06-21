@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/ocp-docs-api/internal/api"
+	"github.com/ocp-docs-api/internal/flusher"
 	"github.com/ocp-docs-api/internal/metrics"
 	"github.com/ocp-docs-api/internal/producer"
 	"github.com/ocp-docs-api/internal/repo"
@@ -22,6 +23,7 @@ import (
 
 const (
 	grpcPort  = 7002
+	chunkSize = 10
 )
 
 const (
@@ -92,7 +94,8 @@ func runGrpc() error {
 	}()
 
 	repo := repo.New(*db)
-	desc.RegisterOcpDocsApiServer(grpcServer, api.NewDocsApi(repo, brokerProducer))
+	flusher := flusher.New(repo, chunkSize)
+	desc.RegisterOcpDocsApiServer(grpcServer, api.NewDocsApi(repo, flusher, brokerProducer))
 
 	if err = grpcServer.Serve(lis); err != nil {
 		log.Fatal().Err(err).Msg("Cannot accept connections")
