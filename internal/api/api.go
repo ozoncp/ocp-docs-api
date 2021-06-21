@@ -21,6 +21,10 @@ type api struct {
 	prod producer.Producer
 }
 
+var (
+	chunks = 100
+)
+
 func toMessage(doc document.Document) *desc.Doc {
 	return &desc.Doc{
 		Id:         doc.Id,
@@ -95,7 +99,7 @@ func (a *api) MultiCreateDocsV1(
 	for _, val := range req.Docs {
 		docs = append(docs, fromMessageDoc(val))
 	}
-	chunks := 100
+
 	flusher := flusher.New(a.repo, chunks)
 	_, idOfCreatedDocs, err := flusher.Flush(ctx, docs)
 
