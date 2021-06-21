@@ -3,18 +3,15 @@ package repo
 import (
 	"context"
 	"errors"
-	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"github.com/ocp-docs-api/internal/models/document"
-	"github.com/ocp-docs-api/internal/utils"
-	"github.com/opentracing/opentracing-go"
 	"github.com/rs/zerolog/log"
 )
 
 type Repo interface {
 	AddDoc(ctx context.Context, doc document.Document) (uint64, error)
-	AddDocs(ctx context.Context, docs []document.Document) (uint64, error)
+	AddDocs(ctx context.Context, docs []document.Document) ([]uint64, error)
 	RemoveDoc(ctx context.Context, docId uint64) error
 	DescribeDoc(ctx context.Context, docId uint64) (*document.Document, error)
 	ListDocs(ctx context.Context, limit, offset uint64) ([]document.Document, error)
@@ -27,13 +24,11 @@ const (
 
 type repo struct {
 	db sqlx.DB
-	chunkSize int
 }
 
-func New(db sqlx.DB, chunkSize int) Repo {
+func New(db sqlx.DB) Repo {
 	return &repo{
 		db: db,
-		chunkSize: chunkSize,
 	}
 }
 
@@ -113,52 +108,38 @@ func (r *repo) ListDocs(ctx context.Context, limit, offset uint64) ([]document.D
 	return listDocs, nil
 }
 
-func (r *repo) AddDocs(ctx context.Context, docs []document.Document) (uint64, error) {
-	chunks, err := utils.SplitDocumentSlice(docs, r.chunkSize)
-	var numberOfDocsCreated int64 = 0
+func (r *repo) AddDocs(ctx context.Context, docs []document.Document) ([]uint64, error) {
+	log.Printf("Add docs to database")
 
+	query := sq.Insert(tableName).
+		Columns("name", "link", "source_link").
+		Suffix("RETURNING \"id\"").
+		RunWith(r.db).
+		PlaceholderFormat(sq.Dollar)
+
+	for _, doc := range docs {
+		query = query.Values(doc.Name, doc.Link, doc.SourceLink)
+	}
+
+	rows, err := query.QueryContext(ctx)
+
+	added := make([]uint64, 0, len(docs))
 	if err != nil {
-	 	return uint64(numberOfDocsCreated), err
+		return added, err
 	}
+	defer rows.Close()
 
-	for i, val := range chunks {
-		err := func() error {
-			spanName := "Add_docs" + fmt.Sprintf("%v", i)
-			span, _ := opentracing.StartSpanFromContext(ctx, spanName)
-			defer span.Finish()
-
-			query := sq.Insert(tableName).
-				Columns("name", "link", "source_link").
-				RunWith(r.db).
-				PlaceholderFormat(sq.Dollar)
-
-			for _, doc := range val {
-				query = query.Values(doc.Name, doc.Link, doc.SourceLink)
-			}
-
-			result, err := query.ExecContext(ctx)
-
-			if err != nil {
-				return err
-			}
-
-			rowsAffected, err := result.RowsAffected()
-
-			if err != nil {
-				return err
-			}
-
-			numberOfDocsCreated += rowsAffected
-			span.SetTag("docs-added-in-db", numberOfDocsCreated)
-			return nil
-		}()
-
-		if err != nil {
-			return uint64(numberOfDocsCreated), err
+	for rows.Next() {
+		var id uint64
+		if err := rows.Scan(&id); err != nil {
+			log.Printf(err.Error())
+			continue
 		}
+		added = append(added, id)
 	}
 
-	return uint64(numberOfDocsCreated), nil
+
+	return added, nil
 }
 
 func (r *repo) UpdateDoc(ctx context.Context, doc document.Document) error {

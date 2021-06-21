@@ -42,14 +42,14 @@ service OcpDocsApi {
     // Update doc
     rpc UpdateDocV1(UpdateDocV1Request) returns (UpdateDocV1Response) {
         option (google.api.http) = {
-            post: "/v1/doc"
+            post: "/v1/docs/{id}"
         };
     }
 
     // Multi create docs
     rpc MultiCreateDocsV1(MultiCreateDocsV1Request) returns (MultiCreateDocsV1Response) {
         option (google.api.http) = {
-            post: "/v1/docs"
+            post: "/v1/docs/multi"
         };
     }
 }
@@ -74,9 +74,7 @@ message DescribeDocV1Response {
 }
 
 message CreateDocV1Request {
-    string name = 1;
-    string link = 2;
-    string sourceLink = 3;
+    NewDoc doc = 1;
 }
 
 message CreateDocV1Response {
@@ -92,7 +90,8 @@ message RemoveDocV1Response {
 }
 
 message UpdateDocV1Request {
-    Doc doc = 1;
+    uint64 id = 1;
+    NewDoc doc = 2;
 }
 
 message UpdateDocV1Response {
@@ -109,6 +108,12 @@ message MultiCreateDocsV1Response {
 
 message Doc {
     uint64 id = 1;
+    string name = 2;
+    string link = 3;
+    string sourceLink = 4;
+}
+
+message NewDoc {
     string name = 2;
     string link = 3;
     string sourceLink = 4;

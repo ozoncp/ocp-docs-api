@@ -51,10 +51,10 @@ func (mr *MockRepoMockRecorder) AddDoc(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // AddDocs mocks base method.
-func (m *MockRepo) AddDocs(arg0 context.Context, arg1 []document.Document) (uint64, error) {
+func (m *MockRepo) AddDocs(arg0 context.Context, arg1 []document.Document) ([]uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddDocs", arg0, arg1)
-	ret0, _ := ret[0].(uint64)
+	ret0, _ := ret[0].([]uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

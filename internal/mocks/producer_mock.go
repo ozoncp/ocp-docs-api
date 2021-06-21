@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	producer "github.com/ocp-docs-api/internal/producer"
 )
 
 // MockProducer is a mock of Producer interface.
@@ -48,7 +49,7 @@ func (mr *MockProducerMockRecorder) Close() *gomock.Call {
 }
 
 // SendMessage mocks base method.
-func (m *MockProducer) SendMessage(arg0 string) bool {
+func (m *MockProducer) SendMessage(arg0 producer.Message) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendMessage", arg0)
 	ret0, _ := ret[0].(bool)

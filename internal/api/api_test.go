@@ -25,14 +25,11 @@ var _ = Describe("Api", func() {
 		db      *sql.DB
 		sqlxDB  *sqlx.DB
 		err     error
-		chunkSize int
-		//prod producer.Producer
 		dataProducerMock *mocks.MockProducer
 	)
 	BeforeEach(func() {
 		ctx = context.Background()
 		db, mock, err = sqlmock.New()
-		chunkSize = 3
 		Expect(err).Should(BeNil())
 		sqlxDB = sqlx.NewDb(db, "sqlmock")
 		ctrl := gomock.NewController(GinkgoT())
@@ -49,19 +46,21 @@ var _ = Describe("Api", func() {
 		BeforeEach(func() {
 			//prod, err = producer.NewProducer("TestOcpDocsApiCreate")
 			Expect(err).Should(BeNil())
-			testApi = api.NewDocsApi(repo.New(*sqlxDB, chunkSize), dataProducerMock)
+			testApi = api.NewDocsApi(repo.New(*sqlxDB), dataProducerMock)
 		})
 
 		Context("test create functions", func(){
 			It("Test create doc", func() {
 				request := &desc.CreateDocV1Request{
-					Name:       "testName",
-					Link:       "www",
-					SourceLink: "com",
+					Doc: &desc.NewDoc{
+						Name:       "testName",
+						Link:       "www",
+						SourceLink: "com",
+					},
 				}
 
 				mock.ExpectQuery("INSERT INTO docs").
-					WithArgs(request.Name, request.Link, request.SourceLink).
+					WithArgs(request.Doc.Name, request.Doc.Link, request.Doc.SourceLink).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 				Expect(testApi).ShouldNot(BeNil())
 				dataProducerMock.EXPECT().SendMessage("CreateDocV1 succesful")
@@ -72,13 +71,15 @@ var _ = Describe("Api", func() {
 
 			It("Test incorrect create docs", func() {
 				request := &desc.CreateDocV1Request{
-					Name:       "testName",
-					Link:       "www",
-					SourceLink: "com",
+					Doc: &desc.NewDoc{
+						Name:       "testName",
+						Link:       "www",
+						SourceLink: "com",
+					},
 				}
 
 				mock.ExpectQuery("INSERT INTO docs").
-					WithArgs(request.Name, request.Link, request.SourceLink).
+					WithArgs(request.Doc.Name, request.Doc.Link, request.Doc.SourceLink).
 					WillReturnError(errors.New("failed to execute sql request"))
 				Expect(testApi).ShouldNot(BeNil())
 
@@ -90,9 +91,7 @@ var _ = Describe("Api", func() {
 
 		Context("test multi-create", func(){
 			BeforeEach(func() {
-				//prod, err = producer.NewProducer("TestOcpDocsApiCreate")
-				//Expect(err).Should(BeNil())
-				testApi = api.NewDocsApi(repo.New(*sqlxDB, chunkSize), dataProducerMock)
+				testApi = api.NewDocsApi(repo.New(*sqlxDB), dataProducerMock)
 			})
 
 			It("Test correct multi-creation", func(){
@@ -102,11 +101,12 @@ var _ = Describe("Api", func() {
 						{Id: 2, Name: "test2", Link: "www2", SourceLink: "com2"},
 						{Id: 3, Name: "test3", Link: "www3", SourceLink: "com3"}},
 				}
-
-				mock.ExpectExec("INSERT INTO docs").
+				rows := sqlmock.NewRows([]string{"id"}).
+					AddRow(1).AddRow(2).AddRow(3)
+				mock.ExpectQuery("INSERT INTO docs").
 					WithArgs("test1", "www1", "com1",
 						"test2", "www2", "com2",
-						"test3", "www3", "com3").WillReturnResult(sqlmock.NewResult(3, 3))
+						"test3", "www3", "com3").WillReturnRows(rows)
 				dataProducerMock.EXPECT().SendMessage("MultiCreateDocV1 successful")
 
 				response, err := testApi.MultiCreateDocsV1(ctx, request)
@@ -122,7 +122,7 @@ var _ = Describe("Api", func() {
 						{Id: 3, Name: "test3", Link: "www3", SourceLink: "com3"}},
 				}
 
-				mock.ExpectExec("INSERT INTO docs").
+				mock.ExpectQuery("INSERT INTO docs").
 					WithArgs("test1", "www1", "com1",
 						"test2", "www2", "com2",
 						"test3", "www3", "com3").WillReturnError(errors.New("failed to execute sql request"))
@@ -135,18 +135,18 @@ var _ = Describe("Api", func() {
 
 		Context("Update docs", func(){
 			BeforeEach(func() {
-				testApi = api.NewDocsApi(repo.New(*sqlxDB, chunkSize), dataProducerMock)
+				testApi = api.NewDocsApi(repo.New(*sqlxDB), dataProducerMock)
 			})
 
 			It("Test update doc", func(){
-				doc := &desc.Doc{
-					Id: 1,
+				doc := &desc.NewDoc{
 					Name: "test1",
 					Link: "www1",
 					SourceLink: "com1",
 				}
 
 				request := &desc.UpdateDocV1Request{
+					Id: 1,
 					Doc : doc,
 				}
 
@@ -161,14 +161,14 @@ var _ = Describe("Api", func() {
 			})
 
 			It("Test incorrect update doc", func(){
-				doc := &desc.Doc{
-					Id: 1,
+				doc := &desc.NewDoc{
 					Name: "test1",
 					Link: "www1",
 					SourceLink: "com1",
 				}
 
 				request := &desc.UpdateDocV1Request{
+					Id: 1,
 					Doc : doc,
 				}
 
@@ -186,7 +186,7 @@ var _ = Describe("Api", func() {
 			BeforeEach(func() {
 				//prod, err = producer.NewProducer("TestOcpDocsApiRemove")
 				//Expect(err).Should(BeNil())
-				testApi = api.NewDocsApi(repo.New(*sqlxDB, chunkSize), dataProducerMock)
+				testApi = api.NewDocsApi(repo.New(*sqlxDB), dataProducerMock)
 			})
 
 			It("Test remove doc", func() {
@@ -227,7 +227,7 @@ var _ = Describe("Api", func() {
 			BeforeEach(func() {
 				//prod, err = producer.NewProducer("TestOcpDocsApiDescribe")
 				//Expect(err).Should(BeNil())
-				testApi = api.NewDocsApi(repo.New(*sqlxDB, chunkSize), dataProducerMock)
+				testApi = api.NewDocsApi(repo.New(*sqlxDB), dataProducerMock)
 			})
 
 			It("Test describe docs", func() {
@@ -266,7 +266,7 @@ var _ = Describe("Api", func() {
 			BeforeEach(func() {
 				//prod, err = producer.NewProducer("TestOcpDocsApiList")
 				//Expect(err).Should(BeNil())
-				testApi = api.NewDocsApi(repo.New(*sqlxDB, chunkSize), dataProducerMock)
+				testApi = api.NewDocsApi(repo.New(*sqlxDB), dataProducerMock)
 			})
 
 			It("Test list doc", func() {

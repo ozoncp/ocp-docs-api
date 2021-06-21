@@ -22,7 +22,6 @@ import (
 
 const (
 	grpcPort  = 7002
-	chunkSize = 5
 )
 
 const (
@@ -92,7 +91,7 @@ func runGrpc() error {
 		}
 	}()
 
-	repo := repo.New(*db, chunkSize)
+	repo := repo.New(*db)
 	desc.RegisterOcpDocsApiServer(grpcServer, api.NewDocsApi(repo, brokerProducer))
 
 	if err = grpcServer.Serve(lis); err != nil {

@@ -11,29 +11,6 @@
     "application/json"
   ],
   "paths": {
-    "/v1/doc": {
-      "post": {
-        "summary": "Update doc",
-        "operationId": "OcpDocsApi_UpdateDocV1",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/apiUpdateDocV1Response"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "tags": [
-          "OcpDocsApi"
-        ]
-      }
-    },
     "/v1/docs": {
       "get": {
         "summary": "List docs",
@@ -72,6 +49,29 @@
           "OcpDocsApi"
         ]
       },
+      "post": {
+        "summary": "Create doc",
+        "operationId": "OcpDocsApi_CreateDocV1",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCreateDocV1Response"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "OcpDocsApi"
+        ]
+      }
+    },
+    "/v1/docs/multi": {
       "post": {
         "summary": "Multi create docs",
         "operationId": "OcpDocsApi_MultiCreateDocsV1",
@@ -154,6 +154,36 @@
         "tags": [
           "OcpDocsApi"
         ]
+      },
+      "post": {
+        "summary": "Update doc",
+        "operationId": "OcpDocsApi_UpdateDocV1",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUpdateDocV1Response"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "OcpDocsApi"
+        ]
       }
     }
   },
@@ -210,6 +240,20 @@
         "docs_added": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "apiNewDoc": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "sourceLink": {
+          "type": "string"
         }
       }
     },

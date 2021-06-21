@@ -1,12 +1,28 @@
 package producer
 
 import (
-"github.com/Shopify/sarama"
+	"encoding/json"
+	"github.com/Shopify/sarama"
 "github.com/rs/zerolog/log"
 )
 
+type EventType  int
+
+const (
+	Created EventType  = iota
+	Updated
+	Removed
+	Described
+)
+
+type Message struct {
+	Type  EventType
+	Id    uint64
+	Body  map[string]interface{}
+}
+
 type Producer interface {
-	SendMessage(msg string) bool
+	SendMessage(msg Message) bool
 	Close() error
 }
 
@@ -31,13 +47,25 @@ func NewProducer(brokers []string, topic string) (Producer, error) {
 	}, nil
 }
 
-func (prod *producer) SendMessage(msg string) bool {
-	saramaMsg := prepareMessage(prod.topic, msg)
-	_, _, err := prod.kafkaProd.SendMessage(saramaMsg)
+func (prod *producer) SendMessage(msg Message) bool {
+	json, err := json.Marshal(msg)
+
+	if err != nil {
+		return false
+	}
+
+	saramaMsg := sarama.ProducerMessage{
+		Topic:     prod.topic,
+		Partition: -1,
+		Value:     sarama.StringEncoder(json),
+	}
+
+	_, _, err = prod.kafkaProd.SendMessage(&saramaMsg)
 	if err != nil {
 		log.Printf(err.Error())
 		return false
 	}
+
 	return true
 }
 
@@ -45,11 +73,4 @@ func (prod *producer) Close() error {
 	return prod.kafkaProd.Close()
 }
 
-func prepareMessage(topic, message string) *sarama.ProducerMessage {
-	msg := &sarama.ProducerMessage{
-		Topic:     topic,
-		Partition: -1,
-		Value:     sarama.StringEncoder(message),
-	}
-	return msg
-}
+

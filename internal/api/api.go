@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"github.com/ocp-docs-api/internal/flusher"
 	"github.com/ocp-docs-api/internal/metrics"
 	"github.com/ocp-docs-api/internal/models/document"
 	"github.com/ocp-docs-api/internal/producer"
@@ -11,6 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
 type api struct {
@@ -28,9 +30,18 @@ func toMessage(doc document.Document) *desc.Doc {
 	}
 }
 
-func fromMessage(doc *desc.Doc) document.Document {
+func fromMessageDoc(doc *desc.Doc) document.Document {
 	return document.Document{
 		Id:          doc.Id,
+		Name:        doc.Name,
+		Link:        doc.Link,
+		SourceLink:  doc.SourceLink,
+	}
+}
+
+func fromMessageNewDoc(doc *desc.NewDoc, id uint64) document.Document {
+	return document.Document{
+		Id:          id,
 		Name:        doc.Name,
 		Link:        doc.Link,
 		SourceLink:  doc.SourceLink,
@@ -52,19 +63,15 @@ func (a *api) CreateDocV1(
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	log.Info().Msgf("Got CreateDocRequest: {name: %s, link: %s, source_link: %s}",
-		req.Name, req.Link, req.SourceLink)
-	doc := document.Document{
-		Name:       req.Name,
-		Link:       req.Link,
-		SourceLink: req.SourceLink,
-	}
+		req.Doc.Name, req.Doc.Link, req.Doc.SourceLink)
+	doc := fromMessageNewDoc(req.Doc, 0)
 	docId, err := a.repo.AddDoc(ctx, doc)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to CreateDoc")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	a.prod.SendMessage("CreateDocV1 succesful")
+	createMessage(producer.Created, docId)
 	metrics.IncrementSuccessfulCreate(1)
 
 	log.Info().Msgf("Create doc with id = %d successfully", docId)
@@ -85,22 +92,28 @@ func (a *api) MultiCreateDocsV1(
 	}
 
 	docs := make([]document.Document, 0, len(req.Docs))
-
 	for _, val := range req.Docs {
-		docs = append(docs, fromMessage(val))
+		docs = append(docs, fromMessageDoc(val))
 	}
-	numberOfDocsCreated, err := a.repo.AddDocs(ctx, docs)
+	chunks := 100
+	flusher := flusher.New(a.repo, chunks)
+	_, idOfCreatedDocs, err := flusher.Flush(ctx, docs)
+
 	if err != nil {
 		log.Error().Err(err).Msg("failed to multi create docs")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	metrics.IncrementSuccessfulCreate(int(numberOfDocsCreated))
-	a.prod.SendMessage("MultiCreateDocV1 successful")
+
+	numberOfCreatedDocs := len(idOfCreatedDocs)
+	for _, val := range idOfCreatedDocs {
+		createMessage(producer.Created, val)
+	}
+	metrics.IncrementSuccessfulCreate(numberOfCreatedDocs)
 	log.Info().Msgf("MultiCreateDocV1 successful")
 
-	span.SetTag("docs-created", numberOfDocsCreated)
+	span.SetTag("docs-created", numberOfCreatedDocs)
 	return &desc.MultiCreateDocsV1Response{
-		DocsAdded: numberOfDocsCreated,
+		DocsAdded: uint64(numberOfCreatedDocs),
 	}, nil
 }
 
@@ -108,18 +121,18 @@ func (a *api) UpdateDocV1(
 	ctx context.Context,
 	req *desc.UpdateDocV1Request,
 ) (*desc.UpdateDocV1Response, error) {
-	log.Info().Msgf("Update doc (id: %d) ...", req.Doc.Id)
+	log.Info().Msgf("Update doc (id: %d) ...", req.Id)
 
 	if err := req.Validate(); err != nil {
 		log.Error().Err(err).Msg("invalid argument")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.repo.UpdateDoc(ctx, fromMessage(req.Doc)); err != nil {
+	if err := a.repo.UpdateDoc(ctx, fromMessageNewDoc(req.Doc, req.Id)); err != nil {
 		log.Error().Err(err).Msg("Failed to update doc")
 		return &desc.UpdateDocV1Response{Found: false}, err
 	}
-	a.prod.SendMessage("UpdateDocV1 successful")
+	createMessage(producer.Updated, req.Id)
 	metrics.IncrementSuccessfulUpdate(1)
 	log.Info().Msgf("Doc was updated")
 	return &desc.UpdateDocV1Response{Found: true}, nil
@@ -143,10 +156,10 @@ func (a *api) ListDocsV1(
 	respDocs := make([]*desc.Doc, 0, len(docs))
 	for _, doc := range docs {
 		respDocs = append(respDocs, toMessage(doc))
+		createMessage(producer.Updated, doc.Id)
 	}
 
-	a.prod.SendMessage("ListDocsV1 successful")
-	metrics.IncrementSuccessfulRead(1)
+	metrics.IncrementSuccessfulRead(len(respDocs))
 
 	return &desc.ListDocsV1Response{Docs: respDocs}, nil
 }
@@ -171,7 +184,7 @@ func (a *api) DescribeDocV1(
 	response := &desc.DescribeDocV1Response{
 		Doc: toMessage(*doc),
 	}
-	a.prod.SendMessage("DescribeDocV1 successful")
+
 	metrics.IncrementSuccessfulRead(1)
 
 	return response, nil
@@ -194,8 +207,18 @@ func (a *api) RemoveDocV1(
 	}
 	log.Info().Msgf("Doc %d was deleted", req.Id)
 
-	a.prod.SendMessage("RemoveDocV1 successful")
+	createMessage(producer.Removed, req.Id)
 	metrics.IncrementSuccessfulDelete(1)
 
 	return &desc.RemoveDocV1Response{Found: true}, nil
+}
+
+func createMessage(Type producer.EventType, id uint64) producer.Message {
+	return producer.Message{
+		Type: Type,
+		Id:  id,
+		Body: map[string]interface{}{
+			"TimesStamp": time.Now(),
+		},
+	}
 }
