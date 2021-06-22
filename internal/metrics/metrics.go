@@ -7,29 +7,29 @@ var processedByCRUDHandler *prometheus.CounterVec = prometheus.NewCounterVec(
 		Name: "processed_by_crud_handler",
 		Help: "Num of processed By CRUD Handler",
 	},
-	[]string{"handler"}, // labels
+	[]string{"handler", "status"}, // labels
 )
 
 func RegisterMetrics() {
 	prometheus.MustRegister(processedByCRUDHandler)
 }
 
-func incrementByHandler(handler string, count int) {
-	processedByCRUDHandler.With(prometheus.Labels{"handler": handler}).Add(float64(count))
+func incrementByHandler(handler string, status string, count int) {
+	processedByCRUDHandler.With(prometheus.Labels{"handler": handler, "status": status}).Add(float64(count))
 }
 
-func IncrementSuccessfulCreate(count int) {
-	incrementByHandler("create", count)
+func IncrementCreate(count int, status string) {
+	incrementByHandler("create", status, count)
 }
 
-func IncrementSuccessfulRead(count int) {
-	incrementByHandler("read", count)
+func IncrementRead(count int, status string) {
+	incrementByHandler("read", status, count)
 }
 
-func IncrementSuccessfulUpdate(count int) {
-	incrementByHandler("update", count)
+func IncrementUpdate(count int, status string) {
+	incrementByHandler("update", status, count)
 }
 
-func IncrementSuccessfulDelete(count int) {
-	incrementByHandler("delete", count)
+func IncrementDelete(count int, status string) {
+	incrementByHandler("delete", status, count)
 }

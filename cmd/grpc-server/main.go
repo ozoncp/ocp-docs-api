@@ -40,7 +40,7 @@ const (
 
 const (
 	metricsPort   = ":9101"
-    metricsHandle = "/metrics"
+	metricsHandle = "/metrics"
 )
 
 func main() {
@@ -130,7 +130,7 @@ func connectToDataBase() (*sqlx.DB, error) {
 
 func connectToBroker() (producer.Producer, error) {
 	kafkaBroker := []string{kafkaBroker}
-	prod, err := producer.NewProducer(kafkaBroker,"OcpDocsApi")
+	prod, err := producer.NewProducer(kafkaBroker, "OcpDocsApi")
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to create kafka producer")
 		return nil, err

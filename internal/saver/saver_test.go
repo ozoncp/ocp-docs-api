@@ -103,7 +103,6 @@ var _ = Describe("Saver", func() {
 			})
 		})
 
-
 		Context("Save more than capacity", func() {
 			It("should drop everything", func() {
 				docs := []document.Document{

@@ -3,26 +3,29 @@ package producer
 import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
-"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/log"
+	"time"
 )
 
-type EventType  int
+type EventType int
 
 const (
-	Created EventType  = iota
+	Created EventType = iota
 	Updated
 	Removed
 	Described
 )
 
 type Message struct {
-	Type  EventType
-	Id    uint64
+	Type      EventType
+	Id        uint64
+	Timestamp uint64
 }
 
 type Producer interface {
 	SendMessage(msg Message) bool
 	Close() error
+	CreateMessage(Type EventType, id uint64) Message
 }
 
 type producer struct {
@@ -70,4 +73,12 @@ func (prod *producer) SendMessage(msg Message) bool {
 
 func (prod *producer) Close() error {
 	return prod.kafkaProd.Close()
+}
+
+func (prod *producer) CreateMessage(Type EventType, id uint64) Message {
+	return Message{
+		Type:      Type,
+		Id:        id,
+		Timestamp: uint64(time.Now().UTC().Unix()),
+	}
 }

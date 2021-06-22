@@ -26,7 +26,7 @@ func New(docsRepo repo.Repo, chunkSize int) Flusher {
 //  return not added docs and IDs of successful added
 func (f *flusher) Flush(ctx context.Context, docs []document.Document) ([]document.Document, []uint64, error) {
 	chunks, err := utils.SplitDocumentSlice(docs, f.chunkSize)
-	successFullIds := make([]uint64,0, len(docs))
+	successFullIds := make([]uint64, 0, len(docs))
 	if err != nil {
 		return docs, successFullIds, err
 	}

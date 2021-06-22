@@ -21,14 +21,14 @@ import (
 
 var _ = Describe("Api", func() {
 	var (
-		ctx     context.Context
-		testApi desc.OcpDocsApiServer
-		mock    sqlmock.Sqlmock
-		db      *sql.DB
-		sqlxDB  *sqlx.DB
-		err     error
+		ctx              context.Context
+		testApi          desc.OcpDocsApiServer
+		mock             sqlmock.Sqlmock
+		db               *sql.DB
+		sqlxDB           *sqlx.DB
+		err              error
 		dataProducerMock *mocks.MockProducer
-		chunkSize = 5
+		chunkSize        = 5
 	)
 	BeforeEach(func() {
 		ctx = context.Background()
@@ -53,7 +53,7 @@ var _ = Describe("Api", func() {
 			testApi = api.NewDocsApi(repo, flusher, dataProducerMock)
 		})
 
-		Context("test create functions", func(){
+		Context("test create functions", func() {
 			It("Test create doc", func() {
 				request := &desc.CreateDocV1Request{
 					Doc: &desc.NewDoc{
@@ -67,11 +67,16 @@ var _ = Describe("Api", func() {
 					WithArgs(request.Doc.Name, request.Doc.Link, request.Doc.SourceLink).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 				Expect(testApi).ShouldNot(BeNil())
+
 				msg := producer.Message{
 					Type: producer.Created,
-					Id:  1,
+					Id:   1,
 				}
-				dataProducerMock.EXPECT().SendMessage(msg)
+				gomock.InOrder(
+					dataProducerMock.EXPECT().CreateMessage(producer.Created, uint64(1)).Return(msg),
+					dataProducerMock.EXPECT().SendMessage(msg),
+				)
+
 				response, err := testApi.CreateDocV1(ctx, request)
 				Expect(err).Should(BeNil())
 				Expect(response.Id).Should(BeEquivalentTo(1))
@@ -97,14 +102,14 @@ var _ = Describe("Api", func() {
 			})
 		})
 
-		Context("test multi-create", func(){
+		Context("test multi-create", func() {
 			BeforeEach(func() {
 				repo := repo.New(*sqlxDB)
 				flusher := flusher.New(repo, chunkSize)
 				testApi = api.NewDocsApi(repo, flusher, dataProducerMock)
 			})
 
-			It("Test correct multi-creation", func(){
+			It("Test correct multi-creation", func() {
 				request := &desc.MultiCreateDocsV1Request{
 					Docs: []*desc.Doc{
 						{Id: 1, Name: "test1", Link: "www1", SourceLink: "com1"},
@@ -118,9 +123,15 @@ var _ = Describe("Api", func() {
 						"test2", "www2", "com2",
 						"test3", "www3", "com3").WillReturnRows(rows)
 				gomock.InOrder(
-					dataProducerMock.EXPECT().SendMessage(producer.Message{ Type: producer.Created, Id:  1}),
-					dataProducerMock.EXPECT().SendMessage(producer.Message{ Type: producer.Created, Id:  2}),
-					dataProducerMock.EXPECT().SendMessage(producer.Message{ Type: producer.Created, Id:  3}),
+					dataProducerMock.EXPECT().CreateMessage(producer.Created, uint64(1)).
+						Return(producer.Message{Type: producer.Created, Id: 1}),
+					dataProducerMock.EXPECT().SendMessage(producer.Message{Type: producer.Created, Id: 1}),
+					dataProducerMock.EXPECT().CreateMessage(producer.Created, uint64(2)).
+						Return(producer.Message{Type: producer.Created, Id: 2}),
+					dataProducerMock.EXPECT().SendMessage(producer.Message{Type: producer.Created, Id: 2}),
+					dataProducerMock.EXPECT().CreateMessage(producer.Created, uint64(3)).
+						Return(producer.Message{Type: producer.Created, Id: 3}),
+					dataProducerMock.EXPECT().SendMessage(producer.Message{Type: producer.Created, Id: 3}),
 				)
 
 				response, err := testApi.MultiCreateDocsV1(ctx, request)
@@ -128,7 +139,7 @@ var _ = Describe("Api", func() {
 				Expect(response.DocsAdded).Should(Equal(uint64(3)))
 			})
 
-			It("Test incorrect multi-creation", func(){
+			It("Test incorrect multi-creation", func() {
 				request := &desc.MultiCreateDocsV1Request{
 					Docs: []*desc.Doc{
 						{Id: 1, Name: "test1", Link: "www1", SourceLink: "com1"},
@@ -147,23 +158,23 @@ var _ = Describe("Api", func() {
 			})
 		})
 
-		Context("Update docs", func(){
+		Context("Update docs", func() {
 			BeforeEach(func() {
 				repo := repo.New(*sqlxDB)
 				flusher := flusher.New(repo, chunkSize)
 				testApi = api.NewDocsApi(repo, flusher, dataProducerMock)
 			})
 
-			It("Test update doc", func(){
+			It("Test update doc", func() {
 				doc := &desc.NewDoc{
-					Name: "test1",
-					Link: "www1",
+					Name:       "test1",
+					Link:       "www1",
 					SourceLink: "com1",
 				}
 
 				request := &desc.UpdateDocV1Request{
-					Id: 1,
-					Doc : doc,
+					Id:  1,
+					Doc: doc,
 				}
 
 				mock.ExpectExec("UPDATE docs").
@@ -171,25 +182,29 @@ var _ = Describe("Api", func() {
 					WillReturnResult(sqlmock.NewResult(0, 1))
 				msg := producer.Message{
 					Type: producer.Updated,
-					Id:  1,
+					Id:   1,
 				}
-				dataProducerMock.EXPECT().SendMessage(msg)
+
+				gomock.InOrder(
+					dataProducerMock.EXPECT().CreateMessage(producer.Updated, uint64(1)).Return(msg),
+					dataProducerMock.EXPECT().SendMessage(msg),
+				)
 
 				response, err := testApi.UpdateDocV1(ctx, request)
 				Expect(err).Should(BeNil())
 				Expect(response.Found).Should(Equal(true))
 			})
 
-			It("Test incorrect update doc", func(){
+			It("Test incorrect update doc", func() {
 				doc := &desc.NewDoc{
-					Name: "test1",
-					Link: "www1",
+					Name:       "test1",
+					Link:       "www1",
 					SourceLink: "com1",
 				}
 
 				request := &desc.UpdateDocV1Request{
-					Id: 1,
-					Doc : doc,
+					Id:  1,
+					Doc: doc,
 				}
 
 				mock.ExpectExec("UPDATE docs").
@@ -202,7 +217,7 @@ var _ = Describe("Api", func() {
 			})
 		})
 
-		Context("Test Remove doc", func(){
+		Context("Test Remove doc", func() {
 			BeforeEach(func() {
 				repo := repo.New(*sqlxDB)
 				flusher := flusher.New(repo, chunkSize)
@@ -219,9 +234,12 @@ var _ = Describe("Api", func() {
 					WillReturnResult(sqlmock.NewResult(0, 1))
 				msg := producer.Message{
 					Type: producer.Removed,
-					Id:  1,
+					Id:   1,
 				}
-				dataProducerMock.EXPECT().SendMessage(msg)
+				gomock.InOrder(
+					dataProducerMock.EXPECT().CreateMessage(producer.Removed, uint64(1)).Return(msg),
+					dataProducerMock.EXPECT().SendMessage(msg),
+				)
 
 				Expect(testApi).ShouldNot(BeNil())
 
@@ -247,7 +265,7 @@ var _ = Describe("Api", func() {
 			})
 		})
 
-		Context("Describe doc", func(){
+		Context("Describe doc", func() {
 			BeforeEach(func() {
 				repo := repo.New(*sqlxDB)
 				flusher := flusher.New(repo, chunkSize)
@@ -266,9 +284,12 @@ var _ = Describe("Api", func() {
 						AddRow(1, "testName", "www", "com"))
 				msg := producer.Message{
 					Type: producer.Described,
-					Id:  1,
+					Id:   1,
 				}
-				dataProducerMock.EXPECT().SendMessage(msg)
+				gomock.InOrder(
+					dataProducerMock.EXPECT().CreateMessage(producer.Described, uint64(1)).Return(msg),
+					dataProducerMock.EXPECT().SendMessage(msg),
+				)
 
 				response, err := testApi.DescribeDocV1(ctx, request)
 				Expect(err).Should(BeNil())
@@ -290,7 +311,7 @@ var _ = Describe("Api", func() {
 			})
 		})
 
-		Context("List doc", func(){
+		Context("List doc", func() {
 			BeforeEach(func() {
 				repo := repo.New(*sqlxDB)
 				flusher := flusher.New(repo, chunkSize)
@@ -315,15 +336,19 @@ var _ = Describe("Api", func() {
 				dataProducerMock.EXPECT().SendMessage("ListDocsV1 successful")
 
 				gomock.InOrder(
-					dataProducerMock.EXPECT().SendMessage(producer.Message{ Type: producer.Updated, Id:  1}),
-					dataProducerMock.EXPECT().SendMessage(producer.Message{ Type: producer.Updated, Id:  2}),
+					dataProducerMock.EXPECT().CreateMessage(producer.Updated, uint64(1)).
+						Return(producer.Message{Type: producer.Updated, Id: 1}),
+					dataProducerMock.EXPECT().SendMessage(producer.Message{Type: producer.Updated, Id: 1}),
+					dataProducerMock.EXPECT().CreateMessage(producer.Updated, uint64(2)).
+						Return(producer.Message{Type: producer.Updated, Id: 2}),
+					dataProducerMock.EXPECT().SendMessage(producer.Message{Type: producer.Updated, Id: 2}),
 				)
 
 				response, err := testApi.ListDocsV1(ctx, request)
 
 				Expect(err).Should(BeNil())
 				Expect(response).Should(Equal(
-					&desc.ListDocsV1Response {
+					&desc.ListDocsV1Response{
 						Docs: []*desc.Doc{
 							{Id: 1, Name: "test1", Link: "link1", SourceLink: "srcLink1"},
 							{Id: 2, Name: "test2", Link: "link2", SourceLink: "srcLink2"},

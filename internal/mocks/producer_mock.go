@@ -48,6 +48,20 @@ func (mr *MockProducerMockRecorder) Close() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockProducer)(nil).Close))
 }
 
+// CreateMessage mocks base method.
+func (m *MockProducer) CreateMessage(arg0 producer.EventType, arg1 uint64) producer.Message {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateMessage", arg0, arg1)
+	ret0, _ := ret[0].(producer.Message)
+	return ret0
+}
+
+// CreateMessage indicates an expected call of CreateMessage.
+func (mr *MockProducerMockRecorder) CreateMessage(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMessage", reflect.TypeOf((*MockProducer)(nil).CreateMessage), arg0, arg1)
+}
+
 // SendMessage mocks base method.
 func (m *MockProducer) SendMessage(arg0 producer.Message) bool {
 	m.ctrl.T.Helper()
