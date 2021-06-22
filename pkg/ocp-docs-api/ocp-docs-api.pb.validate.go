@@ -345,11 +345,15 @@ func (m *CreateDocV1Request) Validate() error {
 		return nil
 	}
 
-	// no validation rules for Name
-
-	// no validation rules for Link
-
-	// no validation rules for SourceLink
+	if v, ok := interface{}(m.GetDoc()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateDocV1RequestValidationError{
+				field:  "Doc",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	return nil
 }
@@ -622,6 +626,305 @@ var _ interface {
 	ErrorName() string
 } = RemoveDocV1ResponseValidationError{}
 
+// Validate checks the field values on UpdateDocV1Request with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *UpdateDocV1Request) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Id
+
+	if v, ok := interface{}(m.GetDoc()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateDocV1RequestValidationError{
+				field:  "Doc",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	return nil
+}
+
+// UpdateDocV1RequestValidationError is the validation error returned by
+// UpdateDocV1Request.Validate if the designated constraints aren't met.
+type UpdateDocV1RequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateDocV1RequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateDocV1RequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateDocV1RequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateDocV1RequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateDocV1RequestValidationError) ErrorName() string {
+	return "UpdateDocV1RequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateDocV1RequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateDocV1Request.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateDocV1RequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateDocV1RequestValidationError{}
+
+// Validate checks the field values on UpdateDocV1Response with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *UpdateDocV1Response) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Found
+
+	return nil
+}
+
+// UpdateDocV1ResponseValidationError is the validation error returned by
+// UpdateDocV1Response.Validate if the designated constraints aren't met.
+type UpdateDocV1ResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateDocV1ResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateDocV1ResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateDocV1ResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateDocV1ResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateDocV1ResponseValidationError) ErrorName() string {
+	return "UpdateDocV1ResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateDocV1ResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateDocV1Response.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateDocV1ResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateDocV1ResponseValidationError{}
+
+// Validate checks the field values on MultiCreateDocsV1Request with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *MultiCreateDocsV1Request) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	for idx, item := range m.GetDocs() {
+		_, _ = idx, item
+
+		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MultiCreateDocsV1RequestValidationError{
+					field:  fmt.Sprintf("Docs[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MultiCreateDocsV1RequestValidationError is the validation error returned by
+// MultiCreateDocsV1Request.Validate if the designated constraints aren't met.
+type MultiCreateDocsV1RequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MultiCreateDocsV1RequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MultiCreateDocsV1RequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MultiCreateDocsV1RequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MultiCreateDocsV1RequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MultiCreateDocsV1RequestValidationError) ErrorName() string {
+	return "MultiCreateDocsV1RequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e MultiCreateDocsV1RequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMultiCreateDocsV1Request.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MultiCreateDocsV1RequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MultiCreateDocsV1RequestValidationError{}
+
+// Validate checks the field values on MultiCreateDocsV1Response with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *MultiCreateDocsV1Response) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for DocsAdded
+
+	return nil
+}
+
+// MultiCreateDocsV1ResponseValidationError is the validation error returned by
+// MultiCreateDocsV1Response.Validate if the designated constraints aren't met.
+type MultiCreateDocsV1ResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MultiCreateDocsV1ResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MultiCreateDocsV1ResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MultiCreateDocsV1ResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MultiCreateDocsV1ResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MultiCreateDocsV1ResponseValidationError) ErrorName() string {
+	return "MultiCreateDocsV1ResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e MultiCreateDocsV1ResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMultiCreateDocsV1Response.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MultiCreateDocsV1ResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MultiCreateDocsV1ResponseValidationError{}
+
 // Validate checks the field values on Doc with the rules defined in the proto
 // definition for this message. If any rules are violated, an error is returned.
 func (m *Doc) Validate() error {
@@ -693,3 +996,73 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DocValidationError{}
+
+// Validate checks the field values on NewDoc with the rules defined in the
+// proto definition for this message. If any rules are violated, an error is returned.
+func (m *NewDoc) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Name
+
+	// no validation rules for Link
+
+	// no validation rules for SourceLink
+
+	return nil
+}
+
+// NewDocValidationError is the validation error returned by NewDoc.Validate if
+// the designated constraints aren't met.
+type NewDocValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NewDocValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NewDocValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NewDocValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NewDocValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NewDocValidationError) ErrorName() string { return "NewDocValidationError" }
+
+// Error satisfies the builtin error interface
+func (e NewDocValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNewDoc.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NewDocValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NewDocValidationError{}

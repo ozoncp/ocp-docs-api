@@ -59,14 +59,14 @@ func (s *saver) flushing() {
 	for {
 		select {
 		case <-s.a.Alarm():
-			flushRes := s.f.Flush(s.ctx, s.data)
+			flushRes, _, _ := s.f.Flush(s.ctx, s.data)
 			if flushRes != nil {
 				s.data = flushRes
 			} else {
 				s.data = s.data[:0]
 			}
 		case <-s.done:
-			s.data = s.f.Flush(s.ctx, s.data)
+			s.data, _, _ = s.f.Flush(s.ctx, s.data)
 			s.a.Close()
 			return
 		case task := <-s.docCh:

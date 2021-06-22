@@ -19,6 +19,8 @@ var _ = Describe("Flusher", func() {
 		mockRepo *mocks.MockRepo
 		docs     []document.Document
 		result   []document.Document
+		ids      []uint64
+		err      error
 
 		f flusher.Flusher
 
@@ -37,22 +39,24 @@ var _ = Describe("Flusher", func() {
 
 	JustBeforeEach(func() {
 		f = flusher.New(mockRepo, chunkSize)
-		result = f.Flush(ctx, docs)
+		result, ids, err = f.Flush(ctx, docs)
 	})
 
 	Context("repo save all tasks", func() {
 		BeforeEach(func() {
 			chunkSize = 3
 			docs = []document.Document{
-				{Id: 1},
-				{Id: 2},
-				{Id: 3},
+				{Id: 1, Name: "test1", Link: "www1", SourceLink: "com1"},
+				{Id: 2, Name: "test2", Link: "www2", SourceLink: "com2"},
+				{Id: 3, Name: "test3", Link: "www3", SourceLink: "com3"},
 			}
-			mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1}, {Id: 2}, {Id: 3}}).Return(nil)
+			mockRepo.EXPECT().AddDocs(gomock.Any(), docs).Return([]uint64{1, 2, 3}, nil)
 		})
 
 		It("", func() {
+			Expect(len(ids)).Should(Equal(3))
 			Expect(result).Should(BeNil())
+			Expect(err).Should(BeNil())
 		})
 	})
 
@@ -67,8 +71,8 @@ var _ = Describe("Flusher", func() {
 
 			chunkSize = 2
 			gomock.InOrder(
-				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 1}, {Id: 2}}).Return(nil),
-				mockRepo.EXPECT().AddDocs(ctx, []document.Document{{Id: 3}, {Id: 4}}).Return(errors.New("testError")),
+				mockRepo.EXPECT().AddDocs(gomock.Any(), []document.Document{{Id: 1}, {Id: 2}}).Return([]uint64{1, 2}, nil),
+				mockRepo.EXPECT().AddDocs(gomock.Any(), []document.Document{{Id: 3}, {Id: 4}}).Return([]uint64{}, errors.New("testError")),
 			)
 		})
 		expectedRes := []document.Document{

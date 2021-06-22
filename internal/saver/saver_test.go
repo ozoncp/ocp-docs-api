@@ -189,16 +189,18 @@ var _ = Describe("Saver", func() {
 				wg.Add(1)
 				defer wg.Wait()
 				saver := saver.New(ctx, len(docs)+1, mockFlusher, alarmer, saver.DropAll)
-
-				gomock.InOrder(
-					mockFlusher.EXPECT().Flush(ctx, gomock.Eq(docs)).Return([]document.Document{{Id: 3}, {Id: 4}}),
-					mockFlusher.EXPECT().Flush(ctx, gomock.Eq([]document.Document{{Id: 3}, {Id: 4}})).Do(func(ctx context.Context, entities []document.Document) { wg.Done() }),
-				)
 				saver.Init()
-
 				for i := 0; i < len(docs); i++ {
 					saver.Save(docs[i])
 				}
+				gomock.InOrder(
+					mockFlusher.EXPECT().Flush(gomock.Any(), gomock.Eq(docs)).Return([]document.Document{{Id: 3}, {Id: 4}}),
+					mockFlusher.EXPECT().Flush(gomock.Any(), gomock.Eq([]document.Document{{Id: 3}, {Id: 4}})).Do(
+						func(ctx context.Context, entities []document.Document) {
+							wg.Done()
+						}),
+				)
+
 				alarmer.alarm()
 				saver.Close()
 			})

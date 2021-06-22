@@ -18,10 +18,18 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OcpDocsApiClient interface {
+	// List docs
 	ListDocsV1(ctx context.Context, in *ListDocsV1Request, opts ...grpc.CallOption) (*ListDocsV1Response, error)
+	// Describe doc
 	DescribeDocV1(ctx context.Context, in *DescribeDocV1Request, opts ...grpc.CallOption) (*DescribeDocV1Response, error)
+	// Create doc
 	CreateDocV1(ctx context.Context, in *CreateDocV1Request, opts ...grpc.CallOption) (*CreateDocV1Response, error)
+	// Remove doc
 	RemoveDocV1(ctx context.Context, in *RemoveDocV1Request, opts ...grpc.CallOption) (*RemoveDocV1Response, error)
+	// Update doc
+	UpdateDocV1(ctx context.Context, in *UpdateDocV1Request, opts ...grpc.CallOption) (*UpdateDocV1Response, error)
+	// Multi create docs
+	MultiCreateDocsV1(ctx context.Context, in *MultiCreateDocsV1Request, opts ...grpc.CallOption) (*MultiCreateDocsV1Response, error)
 }
 
 type ocpDocsApiClient struct {
@@ -68,14 +76,40 @@ func (c *ocpDocsApiClient) RemoveDocV1(ctx context.Context, in *RemoveDocV1Reque
 	return out, nil
 }
 
+func (c *ocpDocsApiClient) UpdateDocV1(ctx context.Context, in *UpdateDocV1Request, opts ...grpc.CallOption) (*UpdateDocV1Response, error) {
+	out := new(UpdateDocV1Response)
+	err := c.cc.Invoke(ctx, "/ocp.docs.api.OcpDocsApi/UpdateDocV1", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ocpDocsApiClient) MultiCreateDocsV1(ctx context.Context, in *MultiCreateDocsV1Request, opts ...grpc.CallOption) (*MultiCreateDocsV1Response, error) {
+	out := new(MultiCreateDocsV1Response)
+	err := c.cc.Invoke(ctx, "/ocp.docs.api.OcpDocsApi/MultiCreateDocsV1", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OcpDocsApiServer is the server API for OcpDocsApi service.
 // All implementations must embed UnimplementedOcpDocsApiServer
 // for forward compatibility
 type OcpDocsApiServer interface {
+	// List docs
 	ListDocsV1(context.Context, *ListDocsV1Request) (*ListDocsV1Response, error)
+	// Describe doc
 	DescribeDocV1(context.Context, *DescribeDocV1Request) (*DescribeDocV1Response, error)
+	// Create doc
 	CreateDocV1(context.Context, *CreateDocV1Request) (*CreateDocV1Response, error)
+	// Remove doc
 	RemoveDocV1(context.Context, *RemoveDocV1Request) (*RemoveDocV1Response, error)
+	// Update doc
+	UpdateDocV1(context.Context, *UpdateDocV1Request) (*UpdateDocV1Response, error)
+	// Multi create docs
+	MultiCreateDocsV1(context.Context, *MultiCreateDocsV1Request) (*MultiCreateDocsV1Response, error)
 	mustEmbedUnimplementedOcpDocsApiServer()
 }
 
@@ -94,6 +128,12 @@ func (UnimplementedOcpDocsApiServer) CreateDocV1(context.Context, *CreateDocV1Re
 }
 func (UnimplementedOcpDocsApiServer) RemoveDocV1(context.Context, *RemoveDocV1Request) (*RemoveDocV1Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveDocV1 not implemented")
+}
+func (UnimplementedOcpDocsApiServer) UpdateDocV1(context.Context, *UpdateDocV1Request) (*UpdateDocV1Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDocV1 not implemented")
+}
+func (UnimplementedOcpDocsApiServer) MultiCreateDocsV1(context.Context, *MultiCreateDocsV1Request) (*MultiCreateDocsV1Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MultiCreateDocsV1 not implemented")
 }
 func (UnimplementedOcpDocsApiServer) mustEmbedUnimplementedOcpDocsApiServer() {}
 
@@ -180,6 +220,42 @@ func _OcpDocsApi_RemoveDocV1_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OcpDocsApi_UpdateDocV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDocV1Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OcpDocsApiServer).UpdateDocV1(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ocp.docs.api.OcpDocsApi/UpdateDocV1",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OcpDocsApiServer).UpdateDocV1(ctx, req.(*UpdateDocV1Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _OcpDocsApi_MultiCreateDocsV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MultiCreateDocsV1Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OcpDocsApiServer).MultiCreateDocsV1(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ocp.docs.api.OcpDocsApi/MultiCreateDocsV1",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OcpDocsApiServer).MultiCreateDocsV1(ctx, req.(*MultiCreateDocsV1Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OcpDocsApi_ServiceDesc is the grpc.ServiceDesc for OcpDocsApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -202,6 +278,14 @@ var OcpDocsApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveDocV1",
 			Handler:    _OcpDocsApi_RemoveDocV1_Handler,
+		},
+		{
+			MethodName: "UpdateDocV1",
+			Handler:    _OcpDocsApi_UpdateDocV1_Handler,
+		},
+		{
+			MethodName: "MultiCreateDocsV1",
+			Handler:    _OcpDocsApi_MultiCreateDocsV1_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

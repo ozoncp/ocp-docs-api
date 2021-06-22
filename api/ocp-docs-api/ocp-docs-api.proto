@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 import "google/api/annotations.proto";
-import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
+import "validate/validate.proto";
 
 package ocp.docs.api;
 
@@ -11,27 +11,45 @@ option go_package = "github.com/ozoncp/ocp-docs-api/pkg/ocp-docs-api;ocp_docs_ap
 
 service OcpDocsApi {
 
+    // List docs
     rpc ListDocsV1(ListDocsV1Request) returns (ListDocsV1Response) {
         option (google.api.http) = {
             get: "/v1/docs"
         };
     }
 
+    // Describe doc
     rpc DescribeDocV1(DescribeDocV1Request) returns (DescribeDocV1Response) {
         option (google.api.http) = {
             get: "/v1/docs/{id}"
         };
     }
 
+    // Create doc
     rpc CreateDocV1(CreateDocV1Request) returns (CreateDocV1Response) {
         option (google.api.http) = {
             post: "/v1/docs"
         };
     }
 
+    // Remove doc
     rpc RemoveDocV1(RemoveDocV1Request) returns (RemoveDocV1Response) {
         option (google.api.http) = {
             delete: "/v1/docs/{id}"
+        };
+    }
+
+    // Update doc
+    rpc UpdateDocV1(UpdateDocV1Request) returns (UpdateDocV1Response) {
+        option (google.api.http) = {
+            post: "/v1/docs/{id}"
+        };
+    }
+
+    // Multi create docs
+    rpc MultiCreateDocsV1(MultiCreateDocsV1Request) returns (MultiCreateDocsV1Response) {
+        option (google.api.http) = {
+            post: "/v1/docs/multi"
         };
     }
 }
@@ -56,9 +74,7 @@ message DescribeDocV1Response {
 }
 
 message CreateDocV1Request {
-    string name = 1;
-    string link = 2;
-    string sourceLink = 3;
+    NewDoc doc = 1;
 }
 
 message CreateDocV1Response {
@@ -73,8 +89,31 @@ message RemoveDocV1Response {
     bool found = 1;
 }
 
+message UpdateDocV1Request {
+    uint64 id = 1;
+    NewDoc doc = 2;
+}
+
+message UpdateDocV1Response {
+    bool found = 1;
+}
+
+message MultiCreateDocsV1Request {
+    repeated Doc docs = 1;
+}
+
+message MultiCreateDocsV1Response {
+    uint64 docs_added = 1;
+}
+
 message Doc {
     uint64 id = 1;
+    string name = 2;
+    string link = 3;
+    string sourceLink = 4;
+}
+
+message NewDoc {
     string name = 2;
     string link = 3;
     string sourceLink = 4;
